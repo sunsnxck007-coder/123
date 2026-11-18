@@ -1,0 +1,7210 @@
+
+
+if not game:IsLoaded() then
+
+    game.Loaded:Wait()
+
+end
+
+
+
+local Players = game:GetService("Players")
+
+local LocalPlayer = Players.LocalPlayer
+
+while not LocalPlayer do
+
+    task.wait(0.1)
+
+    LocalPlayer = Players.LocalPlayer
+
+end
+
+
+
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 30)
+
+local Workspace = game:GetService("Workspace")
+
+local RunService = game:GetService("RunService")
+
+
+
+-- Project Real (https://docs.projectreal.gg/en) & Universal UNC Environment Compatibility
+
+local cloneref = (cloneref or clonereference or function(instance)
+
+    return instance
+
+end)
+
+local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
+
+local HttpService = cloneref(game:GetService("HttpService"))
+
+local gethui = (gethui or function()
+
+    return game:GetService("CoreGui")
+
+end)
+
+local isfile = isfile or function() return false end
+
+local readfile = readfile or function() return nil end
+
+local writefile = writefile or function() end
+
+local makefolder = makefolder or function() end
+
+local isfolder = isfolder or function() return false end
+
+
+
+local fireproximityprompt = (fireproximityprompt or function(prompt, dist, checkFull)
+
+    if prompt and prompt:IsA("ProximityPrompt") then
+
+        pcall(function() prompt:InputHoldBegin() end)
+
+        task.wait(prompt.HoldDuration or 0.2)
+
+        pcall(function() prompt:InputHoldEnd() end)
+
+    end
+
+end)
+
+
+
+local firesignal = (firesignal or function(signal, ...)
+
+    local args = {...}
+
+    pcall(function()
+
+        if signal and typeof(signal) == "RBXScriptSignal" and getconnections then
+
+            for _, conn in ipairs(getconnections(signal)) do
+
+                if conn.Function then
+
+                    pcall(conn.Function, table.unpack(args))
+
+                elseif conn.Fire then
+
+                    pcall(conn.Fire, conn, table.unpack(args))
+
+                end
+
+            end
+
+        end
+
+    end)
+
+end)
+
+
+
+-- Wait for critical game folders to replicate
+
+ReplicatedStorage:WaitForChild("Shared", 30)
+
+
+
+-- ============================================================================
+
+-- 1. LOAD CONFIGS & MODULES
+
+-- ============================================================================
+
+local AdminAbuseConfig = nil
+
+pcall(function()
+
+    AdminAbuseConfig = require(ReplicatedStorage.Shared.Configs.AdminAbuseConfig)
+
+end)
+
+local CharacterConfig = nil
+
+pcall(function()
+
+    CharacterConfig = require(ReplicatedStorage.Shared.Configs.CharacterConfig)
+
+end)
+
+
+
+local ServerData = nil
+
+pcall(function()
+
+    ServerData = require(ReplicatedStorage.Shared.Modules.DataReceiver.ServerData)
+
+end)
+
+
+
+local PlayerData = nil
+
+pcall(function()
+
+    PlayerData = require(ReplicatedStorage.Shared.Modules.DataReceiver.PlayerData)
+
+end)
+
+
+
+local Remotes = nil
+
+pcall(function()
+
+    Remotes = require(ReplicatedStorage.Shared.Modules.Remotes)
+
+end)
+
+
+
+local SpeedConfig = nil
+
+pcall(function()
+
+    SpeedConfig = require(ReplicatedStorage.Shared.Configs.SpeedConfig)
+
+end)
+
+
+
+local TreadmillConfig = nil
+
+pcall(function()
+
+    TreadmillConfig = require(ReplicatedStorage.Shared.Configs.TreadmillConfig)
+
+end)
+
+
+
+local TreadmillUtil = nil
+
+pcall(function()
+
+    TreadmillUtil = require(ReplicatedStorage.Shared.Utilities.TreadmillUtil)
+
+end)
+
+
+
+local PlotUtil = nil
+
+pcall(function()
+
+    PlotUtil = require(ReplicatedStorage.Shared.Utilities.PlotUtil)
+
+end)
+
+
+
+local TreadmillJuice = nil
+
+pcall(function()
+
+    TreadmillJuice = require(ReplicatedStorage.UI.Modules.TreadmillJuice)
+
+end)
+
+
+
+local RebirthConfig = nil
+
+pcall(function()
+
+    RebirthConfig = require(ReplicatedStorage.Shared.Configs.RebirthConfig)
+
+end)
+
+
+
+local RebirthUtil = nil
+
+pcall(function()
+
+    RebirthUtil = require(ReplicatedStorage.Shared.Utilities.RebirthUtil)
+
+end)
+
+
+
+local NumberFormatter = nil
+
+pcall(function()
+
+    NumberFormatter = require(ReplicatedStorage.Shared.Utilities.NumberFormatter)
+
+end)
+
+
+
+local AurasConfig = nil
+
+pcall(function()
+
+    AurasConfig = require(ReplicatedStorage.Shared.Configs.AurasConfig)
+
+end)
+
+
+
+local CoachConfig = nil
+
+pcall(function()
+
+    CoachConfig = require(ReplicatedStorage.Shared.Configs.CoachConfig)
+
+end)
+
+
+
+local CoachUtil = nil
+
+pcall(function()
+
+    CoachUtil = require(ReplicatedStorage.Shared.Utilities.CoachUtil)
+
+end)
+
+
+
+local PacksConfig = nil
+
+pcall(function()
+
+    PacksConfig = require(ReplicatedStorage.Shared.Configs.PacksConfig)
+
+end)
+
+
+
+local HatcheryConfig = nil
+
+pcall(function()
+
+    HatcheryConfig = require(ReplicatedStorage.Shared.Configs.HatcheryConfig)
+
+end)
+
+
+
+local PlacementUtil = nil
+
+pcall(function()
+
+    PlacementUtil = require(ReplicatedStorage.Shared.Utilities.PlacementUtil)
+
+end)
+
+
+
+local TowerConfig = nil
+
+pcall(function()
+
+    TowerConfig = require(ReplicatedStorage.Shared.Configs.TowerConfig)
+
+end)
+
+
+
+local TowerUtil = nil
+
+pcall(function()
+
+    TowerUtil = require(ReplicatedStorage.Shared.Utilities.TowerUtil)
+
+end)
+
+
+
+local DungeonUtil = nil
+
+pcall(function()
+
+    DungeonUtil = require(ReplicatedStorage.Shared.Utilities.DungeonUtil)
+
+end)
+
+
+
+local ItemConfig = nil
+
+pcall(function()
+
+    ItemConfig = require(ReplicatedStorage.Shared.Configs.ItemConfig)
+
+end)
+
+
+
+local CosmeticUtil = nil
+
+pcall(function()
+
+    CosmeticUtil = require(ReplicatedStorage.Shared.Utilities.CosmeticUtil)
+
+end)
+
+
+
+local ItemConfig = nil
+
+pcall(function()
+
+    ItemConfig = require(ReplicatedStorage.Shared.Configs.ItemConfig)
+
+end)
+
+
+
+local CosmeticUtil = nil
+
+pcall(function()
+
+    CosmeticUtil = require(ReplicatedStorage.Shared.Utilities.CosmeticUtil)
+
+end)
+
+
+
+-- ============================================================================
+
+-- 2. LOAD WINDUI
+
+-- ============================================================================
+
+if getgenv()._AnimePackWindUI then
+
+    pcall(function()
+
+        if getgenv()._AnimePackWindUI.Destroy then
+
+            getgenv()._AnimePackWindUI:Destroy()
+
+        elseif getgenv()._AnimePackWindUI.Close then
+
+            getgenv()._AnimePackWindUI:Close()
+
+        end
+
+    end)
+
+    getgenv()._AnimePackWindUI = nil
+
+end
+
+
+
+local WindUI
+
+do
+
+    local ok, result = pcall(function()
+
+        return require("./src/Init")
+
+    end)
+
+
+
+    if ok then
+
+        WindUI = result
+
+    else
+
+        if cloneref(game:GetService("RunService")):IsStudio() then
+
+            WindUI = require(cloneref(ReplicatedStorage:WaitForChild("WindUI"):WaitForChild("Init")))
+
+        else
+
+            WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+
+        end
+
+    end
+
+end
+
+
+
+-- ============================================================================
+
+-- 3. CONSTANTS & DEFAULT CONFIGS (INCLUDING PRIMORDIAL & EXCLUSIVE)
+
+-- ============================================================================
+
+local ALL_RARITIES = {
+
+    "Common",
+
+    "Uncommon",
+
+    "Rare",
+
+    "Epic",
+
+    "Legendary",
+
+    "Mythical",
+
+    "Cosmic",
+
+    "Divine",
+
+    "Omniversal",
+
+    "Eternal",
+
+    "Primordial",
+
+    "Exclusive",
+
+    "Godlike",
+
+    "Absolute",
+
+    "???",
+
+    "Immortal"
+
+}
+
+
+
+local ALL_RARITIES_WITH_ALL = {
+
+    "ทุกระดับ (All Rarities)",
+
+    "Common",
+
+    "Uncommon",
+
+    "Rare",
+
+    "Epic",
+
+    "Legendary",
+
+    "Mythical",
+
+    "Cosmic",
+
+    "Divine",
+
+    "Omniversal",
+
+    "Eternal",
+
+    "Primordial",
+
+    "Exclusive",
+
+    "Godlike",
+
+    "Absolute",
+
+    "???",
+
+    "Immortal"
+
+}
+
+
+
+local DEFAULT_SELECTED_RARITIES = {
+
+    "ทุกระดับ (All Rarities)",
+
+    "Common",
+
+    "Uncommon",
+
+    "Rare",
+
+    "Epic",
+
+    "Legendary",
+
+    "Mythical",
+
+    "Cosmic",
+
+    "Divine",
+
+    "Omniversal",
+
+    "Eternal",
+
+    "Primordial",
+
+    "Exclusive",
+
+    "Godlike",
+
+    "Absolute",
+
+    "???",
+
+    "Immortal"
+
+}
+
+
+
+local DEFAULT_RARITY_RANKS = {
+
+    Common = 1,
+
+    Uncommon = 2,
+
+    Rare = 3,
+
+    Epic = 4,
+
+    Legendary = 5,
+
+    Mythical = 6,
+
+    Cosmic = 7,
+
+    Divine = 8,
+
+    Omniversal = 9,
+
+    Eternal = 10,
+
+    Primordial = 11,
+
+    Exclusive = 12,
+
+    Godlike = 13,
+
+    Absolute = 14,
+
+    ["???"] = 15,
+
+    Immortal = 16
+
+}
+
+
+
+local ALL_STAGES = {
+
+    "ทุกด่าน (All Stages)",
+
+    "Stage 1",
+
+    "Stage 2",
+
+    "Stage 3",
+
+    "Stage 4",
+
+    "Stage 5",
+
+    "Stage 6",
+
+    "Stage 7",
+
+    "Stage 8",
+
+    "Stage 9",
+
+    "Stage 10",
+
+    "Stage 11",
+
+    "Stage 12",
+
+    "Stage 13"
+
+}
+
+
+
+local DEFAULT_SELECTED_STAGES = {
+
+    "ทุกด่าน (All Stages)"
+
+}
+
+
+
+getgenv().AnimePackFarmConfig = getgenv().AnimePackFarmConfig or {
+
+    SelectedStagesList = DEFAULT_SELECTED_STAGES,
+
+    SelectedStagesMap = {},
+
+    PrioritizeEndStage = false,
+
+    SelectedRaritiesList = DEFAULT_SELECTED_RARITIES,
+
+    TargetRarities = {},
+
+    AutoBoostX2 = true,
+
+    AutoSellCommon = false,
+
+    AutoTreadmillWhenEmpty = true,
+
+    AutoRebirth = false,
+
+    AutoUpgradeTreadmill = true,
+
+    MaxSpeed = 300,
+
+    IsFarmRunning = false,
+
+    Status = "Idle",
+
+    -- Card Automation & Webhook
+
+    AutoPlaceCards = false,
+
+    SelectedPlaceRarities = {
+
+        "Legendary",
+
+        "Mythical",
+
+        "Cosmic",
+
+        "Divine",
+
+        "Omniversal",
+
+        "Eternal",
+
+        "Primordial",
+
+        "Exclusive",
+
+        "Godlike",
+
+        "Absolute",
+
+        "???",
+
+        "Immortal"
+
+    },
+
+    SelectedPlaceRaritiesMap = {},
+
+    AutoOpenCards = true,
+
+    AutoSellSelectCards = false,
+
+    SelectedSellRarities = {
+
+        "Common",
+
+        "Uncommon"
+
+    },
+
+    SelectedSellRaritiesMap = {},
+
+    AutoBuyCoach = false,
+
+    AutoBuyAura = false,
+
+    DiscordWebhookEnabled = false,
+
+    DiscordWebhookUrl = "",
+
+    WebhookMinRarity = "Mythical",
+
+    -- Double Dungeons Automation
+
+    AutoDoubleDungeon = false,
+
+    AutoUseUlt = false,
+
+    StopAtWave = false,
+
+    StopWaveNumber = 10,
+
+    AutoEquipBestTeam = true,
+
+    AutoEquipBestGear = true
+
+}
+
+
+
+local Config = getgenv().AnimePackFarmConfig
+
+
+
+local function UpdateSelectedStages(val)
+
+    local selectedMap = {}
+
+    local selectedList = {}
+
+    if type(val) == "table" then
+
+        for k, v in pairs(val) do
+
+            if type(k) == "number" and type(v) == "string" then
+
+                selectedMap[v] = true
+
+                table.insert(selectedList, v)
+
+            elseif type(k) == "string" and v == true then
+
+                selectedMap[k] = true
+
+                table.insert(selectedList, k)
+
+            elseif type(v) == "string" then
+
+                selectedMap[v] = true
+
+                table.insert(selectedList, v)
+
+            end
+
+        end
+
+    elseif type(val) == "string" then
+
+        selectedMap[val] = true
+
+        table.insert(selectedList, val)
+
+    end
+
+
+
+    -- Automatically map "ด่านท้ายสุด" / "Last Stage" to Stage 13
+
+    for item, enabled in pairs(selectedMap) do
+
+        if enabled and (item:find("ด่านท้าย") or item:find("Last") or item:find("End")) then
+
+            selectedMap["Stage 13"] = true
+
+            selectedMap["Stage13"] = true
+
+        end
+
+    end
+
+
+
+    Config.SelectedStagesMap = selectedMap
+
+    Config.SelectedStagesList = selectedList
+
+end
+
+
+
+local function UpdateSelectedRarities(val)
+
+    local selectedMap = {}
+
+    local selectedList = {}
+
+    if type(val) == "table" then
+
+        for k, v in pairs(val) do
+
+            if type(k) == "number" and type(v) == "string" then
+
+                selectedMap[v] = true
+
+                table.insert(selectedList, v)
+
+            elseif type(k) == "string" and v == true then
+
+                selectedMap[k] = true
+
+                table.insert(selectedList, k)
+
+            elseif type(v) == "string" then
+
+                selectedMap[v] = true
+
+                table.insert(selectedList, v)
+
+            end
+
+        end
+
+    elseif type(val) == "string" then
+
+        selectedMap[val] = true
+
+        table.insert(selectedList, val)
+
+    end
+
+    if selectedMap["ทุกระดับ (All Rarities)"] or selectedMap["All"] or #selectedList == 0 then
+
+        for _, r in ipairs(ALL_RARITIES) do
+
+            selectedMap[r] = true
+
+        end
+
+    end
+
+
+
+    Config.TargetRarities = selectedMap
+
+    Config.SelectedRaritiesList = selectedList
+
+end
+
+
+
+local function UpdateSelectedPlaceRarities(val)
+
+    local selectedMap = {}
+
+    local selectedList = {}
+
+    if type(val) == "table" then
+
+        for k, v in pairs(val) do
+
+            if type(k) == "number" and type(v) == "string" then
+
+                selectedMap[v] = true
+
+                table.insert(selectedList, v)
+
+            elseif type(k) == "string" and v == true then
+
+                selectedMap[k] = true
+
+                table.insert(selectedList, k)
+
+            elseif type(v) == "string" then
+
+                selectedMap[v] = true
+
+                table.insert(selectedList, v)
+
+            end
+
+        end
+
+    elseif type(val) == "string" then
+
+        selectedMap[val] = true
+
+        table.insert(selectedList, val)
+
+    end
+
+    if selectedMap["ทุกระดับ (All Rarities)"] or selectedMap["All"] then
+
+        for _, r in ipairs(ALL_RARITIES) do
+
+            selectedMap[r] = true
+
+        end
+
+    end
+
+    Config.SelectedPlaceRaritiesMap = selectedMap
+
+    Config.SelectedPlaceRarities = selectedList
+
+end
+
+
+
+local function UpdateSelectedSellRarities(val)
+
+    local selectedMap = {}
+
+    local selectedList = {}
+
+    if type(val) == "table" then
+
+        for k, v in pairs(val) do
+
+            if type(k) == "number" and type(v) == "string" then
+
+                selectedMap[v] = true
+
+                table.insert(selectedList, v)
+
+            elseif type(k) == "string" and v == true then
+
+                selectedMap[k] = true
+
+                table.insert(selectedList, k)
+
+            elseif type(v) == "string" then
+
+                selectedMap[v] = true
+
+                table.insert(selectedList, v)
+
+            end
+
+        end
+
+    elseif type(val) == "string" then
+
+        selectedMap[val] = true
+
+        table.insert(selectedList, val)
+
+    end
+
+    if selectedMap["ทุกระดับ (All Rarities)"] or selectedMap["All"] then
+
+        for _, r in ipairs(ALL_RARITIES) do
+
+            selectedMap[r] = true
+
+        end
+
+    end
+
+    Config.SelectedSellRaritiesMap = selectedMap
+
+    Config.SelectedSellRarities = selectedList
+
+end
+
+
+
+-- ============================================================================
+
+-- 4. AUTO SAVE CONFIGURATION SYSTEM (JSON PERSISTENCE)
+
+-- ============================================================================
+
+local CONFIG_FOLDER = "StealAnAnimePack"
+
+local CONFIG_FILE = CONFIG_FOLDER .. "/config.json"
+
+
+
+local function SaveConfig()
+
+    pcall(function()
+
+        if makefolder and isfolder and not isfolder(CONFIG_FOLDER) then
+
+            makefolder(CONFIG_FOLDER)
+
+        end
+
+        local data = {
+
+            IsFarmRunning = Config.IsFarmRunning,
+
+            SelectedRaritiesList = Config.SelectedRaritiesList,
+
+            SelectedStagesList = Config.SelectedStagesList,
+
+            PrioritizeEndStage = Config.PrioritizeEndStage,
+
+            AutoBoostX2 = Config.AutoBoostX2,
+
+            AutoTreadmillWhenEmpty = Config.AutoTreadmillWhenEmpty,
+
+            AutoSellCommon = Config.AutoSellCommon,
+
+            AutoRebirth = Config.AutoRebirth,
+
+            AutoUpgradeTreadmill = Config.AutoUpgradeTreadmill,
+
+            AutoPlaceCards = Config.AutoPlaceCards,
+
+            SelectedPlaceRarities = Config.SelectedPlaceRarities,
+
+            AutoOpenCards = Config.AutoOpenCards,
+
+            AutoSellSelectCards = Config.AutoSellSelectCards,
+
+            SelectedSellRarities = Config.SelectedSellRarities,
+
+            AutoBuyCoach = Config.AutoBuyCoach,
+
+            AutoBuyAura = Config.AutoBuyAura,
+
+            DiscordWebhookEnabled = Config.DiscordWebhookEnabled,
+
+            DiscordWebhookUrl = Config.DiscordWebhookUrl,
+
+            WebhookMinRarity = Config.WebhookMinRarity,
+
+            AutoEquipBestTeam = Config.AutoEquipBestTeam,
+
+            AutoDoubleDungeon = Config.AutoDoubleDungeon,
+
+            AutoEquipBestGear = Config.AutoEquipBestGear ~= false,
+
+            AutoUseUlt = Config.AutoUseUlt == true,
+
+            StopAtWave = Config.StopAtWave == true,
+
+            StopWaveNumber = Config.StopWaveNumber or 10
+
+        }
+
+        if writefile then
+
+            writefile(CONFIG_FILE, HttpService:JSONEncode(data))
+
+        end
+
+    end)
+
+end
+
+
+
+local function LoadConfig()
+
+    pcall(function()
+
+        if isfile and isfile(CONFIG_FILE) and readfile then
+
+            local raw = readfile(CONFIG_FILE)
+
+            local data = HttpService:JSONDecode(raw)
+
+            if type(data) == "table" then
+
+                if data.IsFarmRunning ~= nil then
+
+                    Config.IsFarmRunning = data.IsFarmRunning
+
+                end
+
+                if type(data.SelectedRaritiesList) == "table" and #data.SelectedRaritiesList > 0 then
+
+                    local hasCommon = false
+
+                    for _, r in ipairs(data.SelectedRaritiesList) do
+
+                        if r == "Common" or r:find("All") or r:find("ทุก") then hasCommon = true break end
+
+                    end
+
+                    if not hasCommon then
+
+                        table.insert(data.SelectedRaritiesList, 1, "Common")
+
+                        table.insert(data.SelectedRaritiesList, 2, "Uncommon")
+
+                    end
+
+                    Config.SelectedRaritiesList = data.SelectedRaritiesList
+
+                end
+
+                if type(data.SelectedStagesList) == "table" and #data.SelectedStagesList > 0 then
+
+                    Config.SelectedStagesList = data.SelectedStagesList
+
+                end
+
+                if data.PrioritizeEndStage ~= nil then
+
+                    Config.PrioritizeEndStage = data.PrioritizeEndStage
+
+                end
+
+                if data.AutoBoostX2 ~= nil then
+
+                    Config.AutoBoostX2 = data.AutoBoostX2
+
+                end
+
+                if data.AutoTreadmillWhenEmpty ~= nil then
+
+                    Config.AutoTreadmillWhenEmpty = data.AutoTreadmillWhenEmpty
+
+                end
+
+                if data.AutoSellCommon ~= nil then
+
+                    Config.AutoSellCommon = data.AutoSellCommon
+
+                end
+
+                if data.AutoRebirth ~= nil then
+
+                    Config.AutoRebirth = data.AutoRebirth
+
+                end
+
+                if data.AutoUpgradeTreadmill ~= nil then
+
+                    Config.AutoUpgradeTreadmill = data.AutoUpgradeTreadmill
+
+                end
+
+                if data.AutoPlaceCards ~= nil then
+
+                    Config.AutoPlaceCards = data.AutoPlaceCards
+
+                end
+
+                if type(data.SelectedPlaceRarities) == "table" and #data.SelectedPlaceRarities > 0 then
+
+                    Config.SelectedPlaceRarities = data.SelectedPlaceRarities
+
+                end
+
+                if data.AutoOpenCards ~= nil then
+
+                    Config.AutoOpenCards = data.AutoOpenCards
+
+                end
+
+                if data.AutoSellSelectCards ~= nil then
+
+                    Config.AutoSellSelectCards = data.AutoSellSelectCards
+
+                end
+
+                if type(data.SelectedSellRarities) == "table" and #data.SelectedSellRarities > 0 then
+
+                    Config.SelectedSellRarities = data.SelectedSellRarities
+
+                end
+
+                if data.AutoBuyCoach ~= nil then
+
+                    Config.AutoBuyCoach = data.AutoBuyCoach
+
+                end
+
+                if data.AutoBuyAura ~= nil then
+
+                    Config.AutoBuyAura = data.AutoBuyAura
+
+                end
+
+                if data.DiscordWebhookEnabled ~= nil then
+
+                    Config.DiscordWebhookEnabled = data.DiscordWebhookEnabled
+
+                end
+
+                if type(data.DiscordWebhookUrl) == "string" then
+
+                    Config.DiscordWebhookUrl = data.DiscordWebhookUrl
+
+                end
+
+                if type(data.WebhookMinRarity) == "string" then
+
+                    Config.WebhookMinRarity = data.WebhookMinRarity
+
+                end
+
+                if data.AutoEquipBestTeam ~= nil then
+
+                    Config.AutoEquipBestTeam = data.AutoEquipBestTeam
+
+                end
+
+                if data.AutoDoubleDungeon ~= nil then
+
+                    Config.AutoDoubleDungeon = data.AutoDoubleDungeon
+
+                end
+
+                if data.AutoEquipBestGear ~= nil then
+
+                    Config.AutoEquipBestGear = data.AutoEquipBestGear
+
+                end
+
+                if type(data.AutoUseUlt) == "boolean" then
+
+                    Config.AutoUseUlt = data.AutoUseUlt
+
+                end
+
+                if type(data.StopAtWave) == "boolean" then
+
+                    Config.StopAtWave = data.StopAtWave
+
+                end
+
+                local stopWave = tonumber(data.StopWaveNumber)
+
+                if stopWave and stopWave >= 1 and stopWave <= 999999 then
+
+                    Config.StopWaveNumber = math.floor(stopWave)
+
+                end
+
+            end
+
+        end
+
+    end)
+
+end
+
+
+
+-- Load saved config first
+
+LoadConfig()
+
+UpdateSelectedStages(Config.SelectedStagesList or DEFAULT_SELECTED_STAGES)
+
+UpdateSelectedRarities(Config.SelectedRaritiesList or DEFAULT_SELECTED_RARITIES)
+
+UpdateSelectedPlaceRarities(Config.SelectedPlaceRarities or DEFAULT_SELECTED_RARITIES)
+
+UpdateSelectedSellRarities(Config.SelectedSellRarities)
+
+
+
+-- ============================================================================
+
+-- 5. WINDOW INITIALIZATION
+
+-- ============================================================================
+
+local Window = WindUI:CreateWindow({
+
+    Title = "Steal an Anime Pack made by x2Sunz and Ud0",
+
+    Folder = "ftgshub",
+
+    Icon = "solar:folder-2-bold-duotone",
+
+    NewElements = true,
+
+    HideSearchBar = false,
+
+
+
+    OpenButton = {
+
+        Title = "Open Menu",
+
+        CornerRadius = UDim.new(1, 0),
+
+        StrokeThickness = 3,
+
+        Enabled = true,
+
+        Draggable = true,
+
+        OnlyMobile = false,
+
+        Scale = 0.5,
+
+
+
+        Color = ColorSequence.new(
+
+            Color3.fromHex("#30FF6A"),
+
+            Color3.fromHex("#e7ff2f")
+
+        ),
+
+    },
+
+    Topbar = {
+
+        Height = 44,
+
+        ButtonsType = "Mac",
+
+    },
+
+})
+
+
+
+getgenv()._AnimePackWindUI = Window
+
+
+
+Window:Tag({
+
+    Title = "v1",
+
+    Icon = "github",
+
+    Color = Color3.fromHex("#1c1c1c"),
+
+    Border = true,
+
+})
+
+
+
+local Grey = Color3.fromHex("#83889E")
+
+
+
+if getgenv().AnimePackFarmEngine and getgenv().AnimePackFarmEngine.Stop then
+
+    pcall(getgenv().AnimePackFarmEngine.Stop)
+
+end
+
+if getgenv()._AnimePackFarmWorker then
+
+    pcall(task.cancel, getgenv()._AnimePackFarmWorker)
+
+    getgenv()._AnimePackFarmWorker = nil
+
+end
+
+if getgenv()._AnimeGroundConn then
+
+    pcall(function() getgenv()._AnimeGroundConn:Disconnect() end)
+
+    getgenv()._AnimeGroundConn = nil
+
+end
+
+if getgenv()._AnimeNoClipConnPre then
+
+    pcall(function() getgenv()._AnimeNoClipConnPre:Disconnect() end)
+
+    getgenv()._AnimeNoClipConnPre = nil
+
+end
+
+if getgenv()._AnimeNoClipConnStep then
+
+    pcall(function() getgenv()._AnimeNoClipConnStep:Disconnect() end)
+
+    getgenv()._AnimeNoClipConnStep = nil
+
+end
+
+if getgenv()._AnimeHeartbeatConn then
+
+    pcall(function() getgenv()._AnimeHeartbeatConn:Disconnect() end)
+
+    getgenv()._AnimeHeartbeatConn = nil
+
+end
+
+if getgenv()._AnimeCharAddedConn then
+
+    pcall(function() getgenv()._AnimeCharAddedConn:Disconnect() end)
+
+    getgenv()._AnimeCharAddedConn = nil
+
+end
+
+
+
+-- ============================================================================
+
+-- 6. MAP POSITIONS & SPATIAL REASONING
+
+-- ============================================================================
+
+-- Mandatory Staging Position requested by clack: (1155, 71, -363)
+
+local STAGING_POSITION = Vector3.new(1155.0, 71.0, -363.0)
+
+
+
+local function GetSafeZonePosition()
+
+    local sz = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("SafeZone")
+
+    if sz and sz:IsA("BasePart") then
+
+        return Vector3.new(sz.Position.X, 71.0, math.clamp(sz.Position.Z, -400, -330))
+
+    end
+
+    return STAGING_POSITION
+
+end
+
+local SAFE_ZONE_POS = STAGING_POSITION
+
+
+
+-- Calibrated to full stage corridor widths (Stage 6-10 spans from Z=-427 to Z=-302)
+
+local CORRIDOR_Z_MIN = -435.0
+
+local CORRIDOR_Z_MAX = -295.0
+
+local CORRIDOR_Z_CENTER = -363.0
+
+local STAGE_CORRIDOR_ENTRY_X = 1205.0
+
+local MIN_SAFE_Y = 64.0
+
+local DEFAULT_GROUND_Y = 71.0
+
+
+
+local function IsInCorridor(pos)
+
+    return pos and pos.X > STAGE_CORRIDOR_ENTRY_X
+
+end
+
+
+
+local function IsInDungeon()
+
+    if game.PlaceId == 135412798316370 then
+
+        return true
+
+    end
+
+    if LocalPlayer and LocalPlayer:GetAttribute("DungeonArena") == true then
+
+        return true
+
+    end
+
+    local pg = LocalPlayer and LocalPlayer:FindFirstChild("PlayerGui")
+
+    local dHud = pg and pg:FindFirstChild("DungeonHud")
+
+    local bottom = dHud and dHud:FindFirstChild("Bottom")
+
+    if dHud and dHud:IsA("ScreenGui") and dHud.Enabled
+
+        and bottom and bottom:IsA("GuiObject") and bottom.Visible then
+
+        return true
+
+    end
+
+    return false
+
+end
+
+
+
+local function IsStageEnabled(stageName)
+
+    for k, v in pairs(Config.SelectedStagesMap) do
+
+        if v == true and (k:find("All") or k:find("ทุก")) then
+
+            return true
+
+        end
+
+    end
+
+    if not Config.SelectedStagesList or #Config.SelectedStagesList == 0 then
+
+        return true
+
+    end
+
+    local num = string.match(stageName, "%d+")
+
+    if num then
+
+        if Config.SelectedStagesMap["Stage " .. num] or Config.SelectedStagesMap["Stage" .. num] then
+
+            return true
+
+        end
+
+        if (num == "13" or tonumber(num) == 13) and (Config.SelectedStagesMap["ด่านท้ายสุด (Stage 13)"] or Config.SelectedStagesMap["ด่านท้าย"] or Config.SelectedStagesMap["Stage 13 (ด่านท้ายสุด)"]) then
+
+            return true
+
+        end
+
+    end
+
+    return Config.SelectedStagesMap[stageName] == true
+
+end
+
+
+
+-- ============================================================================
+
+-- 7. ANTI-RAGDOLL, VOID RESCUE & FLINGGUARD BYPASS
+
+-- ============================================================================
+
+local RagdollModule = nil
+
+pcall(function()
+
+    RagdollModule = require(ReplicatedStorage.Shared.Modules.Ragdoll)
+
+end)
+
+
+
+local function GetCharParts()
+
+    local char = LocalPlayer.Character
+
+    if not char then return nil, nil end
+
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+
+    local hum = char:FindFirstChildOfClass("Humanoid")
+
+    return hrp, hum
+
+end
+
+
+
+local function EnsureFlingBypass()
+
+    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+    if hrp and not hrp:FindFirstChild("FlingVelocity") then
+
+        local fv = Instance.new("Folder")
+
+        fv.Name = "FlingVelocity"
+
+        fv.Parent = hrp
+
+    end
+
+end
+
+
+
+local function RecoverFromRagdoll(char)
+
+    char = char or LocalPlayer.Character
+
+    if not char then return end
+
+
+
+    if RagdollModule and RagdollModule.UnRagdoll then
+
+        pcall(function() RagdollModule.UnRagdoll(char) end)
+
+    end
+
+
+
+    local hum = char:FindFirstChildOfClass("Humanoid")
+
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+
+    if hum and hum.Health > 0 then
+
+        hum:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
+
+        hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+
+        hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+
+        pcall(function() hum:ChangeState(Enum.HumanoidStateType.GettingUp) end)
+
+    end
+
+
+
+    for _, ch in ipairs(char:GetDescendants()) do
+
+        if ch.Name == "RagdollSocket" or ch.Name == "RagdollAttachment" then
+
+            pcall(function() ch:Destroy() end)
+
+        elseif ch:IsA("Motor6D") and not ch.Enabled then
+
+            ch.Enabled = true
+
+        end
+
+    end
+
+
+
+    if hrp then
+
+        hrp.CanCollide = false
+
+        local currentRot = hrp.CFrame - hrp.CFrame.Position
+
+        hrp.CFrame = CFrame.new(hrp.Position.X, math.max(hrp.Position.Y, DEFAULT_GROUND_Y), hrp.Position.Z) * currentRot
+
+        hrp.AssemblyLinearVelocity = Vector3.zero
+
+    end
+
+
+
+    char:SetAttribute("Ragdolled", nil)
+
+    char:SetAttribute("RagdollUntil", nil)
+
+end
+
+
+
+local function SetupProtection(char)
+
+    if not char then return end
+
+    EnsureFlingBypass()
+
+
+
+    local hrp = char:WaitForChild("HumanoidRootPart", 5)
+
+    local hum = char:WaitForChild("Humanoid", 5)
+
+    if hrp then hrp.CanCollide = false end
+
+
+
+    char:GetAttributeChangedSignal("Ragdolled"):Connect(function()
+
+        if char:GetAttribute("Ragdolled") == true then
+
+            RecoverFromRagdoll(char)
+
+        end
+
+    end)
+
+
+
+    if hum then
+
+        hum.StateChanged:Connect(function(oldState, newState)
+
+            if newState == Enum.HumanoidStateType.Physics 
+
+               or newState == Enum.HumanoidStateType.Ragdoll 
+
+               or newState == Enum.HumanoidStateType.FallingDown then
+
+                RecoverFromRagdoll(char)
+
+            end
+
+        end)
+
+    end
+
+end
+
+
+
+-- ============================================================================
+
+-- 8. PURE GROUND MOVEMENT ENGINE (SERVER-COMPLIANT & ANTI-RUBBERBAND)
+
+-- ============================================================================
+
+local activeGroundConn = nil
+
+
+
+local function StopGroundMovement()
+
+    if getgenv()._AnimeGroundConn then
+
+        pcall(function() getgenv()._AnimeGroundConn:Disconnect() end)
+
+        getgenv()._AnimeGroundConn = nil
+
+    end
+
+    if activeGroundConn then
+
+        pcall(function() activeGroundConn:Disconnect() end)
+
+        activeGroundConn = nil
+
+    end
+
+    local hrp, hum = GetCharParts()
+
+    if hum then
+
+        hum:Move(Vector3.zero, false)
+
+    end
+
+    if hrp then
+
+        hrp.AssemblyLinearVelocity = Vector3.new(0, hrp.AssemblyLinearVelocity.Y, 0)
+
+    end
+
+end
+
+
+
+-- Handle Character Respawn dynamically to prevent AFK lockups
+
+if getgenv()._AnimeCharAddedConn then
+
+    pcall(function() getgenv()._AnimeCharAddedConn:Disconnect() end)
+
+    getgenv()._AnimeCharAddedConn = nil
+
+end
+
+
+
+getgenv()._AnimeCharAddedConn = LocalPlayer.CharacterAdded:Connect(function(char)
+
+    StopGroundMovement()
+
+    SetupProtection(char)
+
+end)
+
+if LocalPlayer.Character then
+
+    SetupProtection(LocalPlayer.Character)
+
+end
+
+
+
+-- Smooth NoClip & Multi-Enemy Collision Bypass (prevents enemy slaps & wall collisions)
+
+local function ApplySmoothNoClip()
+
+    local char = LocalPlayer.Character
+
+    if char then
+
+        for _, part in ipairs(char:GetChildren()) do
+
+            if part:IsA("BasePart") then
+
+                if part.Name == "HumanoidRootPart" then
+
+                    part.CanCollide = true
+
+                else
+
+                    part.CanCollide = false
+
+                end
+
+            elseif part:IsA("Tool") then
+
+                for _, p in ipairs(part:GetChildren()) do
+
+                    if p:IsA("BasePart") and p.CanCollide then
+
+                        p.CanCollide = false
+
+                    end
+
+                end
+
+            end
+
+        end
+
+    end
+
+
+
+    local packsRoot = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Packs")
+
+    if packsRoot then
+
+        for _, stage in ipairs(packsRoot:GetChildren()) do
+
+            local enemy = stage:FindFirstChild("Enemy")
+
+            if enemy then
+
+                for _, p in ipairs(enemy:GetDescendants()) do
+
+                    if p:IsA("BasePart") and p.CanCollide then
+
+                        p.CanCollide = false
+
+                    end
+
+                end
+
+            end
+
+        end
+
+    end
+
+end
+
+
+
+-- One-time obstacle collision bypass (runs once on startup, 0 frame overhead)
+
+local function DisableStaticObstacles()
+
+    pcall(function()
+
+        local borderWalls = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("BorderWalls")
+
+        if borderWalls then
+
+            for _, wall in ipairs(borderWalls:GetChildren()) do
+
+                if wall:IsA("BasePart") and wall.CanCollide then
+
+                    wall.CanCollide = false
+
+                end
+
+            end
+
+        end
+
+    end)
+
+end
+
+if not IsInDungeon() then
+
+    DisableStaticObstacles()
+
+end
+
+
+
+-- ============================================================================
+
+-- 6.1 INVISIBLE SAFETY FLOOR (กันตัวละครตกแมพเวลาเดินทะลุกำแพง ครอบคลุมถึง Stage 13)
+
+-- ============================================================================
+
+local function EnsureSafetyFloor()
+
+    pcall(function()
+
+        local folderName = "AntiGravity_SafetyFloors"
+
+        local folder = Workspace:FindFirstChild(folderName)
+
+        if not folder then
+
+            folder = Instance.new("Folder")
+
+            folder.Name = folderName
+
+            folder.Parent = Workspace
+
+        end
+
+
+
+        local specs = {
+
+            { Name = "SafetyFloor_1", Pos = Vector3.new(1700, 66.5, -363), Size = Vector3.new(2048, 3, 700) },
+
+            { Name = "SafetyFloor_2", Pos = Vector3.new(3748, 66.5, -363), Size = Vector3.new(2048, 3, 700) },
+
+            { Name = "SafetyFloor_3", Pos = Vector3.new(5796, 66.5, -363), Size = Vector3.new(2048, 3, 700) },
+
+            { Name = "SafetyFloor_4", Pos = Vector3.new(7300, 66.5, -363), Size = Vector3.new(1600, 3, 700) }
+
+        }
+
+
+
+        for _, spec in ipairs(specs) do
+
+            local p = folder:FindFirstChild(spec.Name)
+
+            if not p or not p:IsA("BasePart") then
+
+                p = Instance.new("Part")
+
+                p.Name = spec.Name
+
+                p.Size = spec.Size
+
+                p.Position = spec.Pos
+
+                p.Anchored = true
+
+                p.CanCollide = true
+
+                p.Transparency = 1
+
+                p.Material = Enum.Material.SmoothPlastic
+
+                p.Parent = folder
+
+            else
+
+                p.Position = spec.Pos
+
+                p.Size = spec.Size
+
+                p.CanCollide = true
+
+                p.Anchored = true
+
+            end
+
+        end
+
+    end)
+
+end
+
+if not IsInDungeon() then
+
+    EnsureSafetyFloor()
+
+end
+
+
+
+if getgenv()._AnimeNoClipConnPre then
+
+    pcall(function() getgenv()._AnimeNoClipConnPre:Disconnect() end)
+
+    getgenv()._AnimeNoClipConnPre = nil
+
+end
+
+if getgenv()._AnimeNoClipConnStep then
+
+    pcall(function() getgenv()._AnimeNoClipConnStep:Disconnect() end)
+
+    getgenv()._AnimeNoClipConnStep = nil
+
+end
+
+if getgenv()._AnimeHeartbeatConn then
+
+    pcall(function() getgenv()._AnimeHeartbeatConn:Disconnect() end)
+
+    getgenv()._AnimeHeartbeatConn = nil
+
+end
+
+
+
+-- Single Stepped connection: only checks ~15 character parts, 0 overhead, solid 60+ FPS
+
+getgenv()._AnimeNoClipConnStep = RunService.Stepped:Connect(function()
+
+    ApplySmoothNoClip()
+
+end)
+
+
+
+getgenv()._AnimeHeartbeatConn = RunService.Heartbeat:Connect(function()
+
+    local char = LocalPlayer.Character
+
+    if not char then return end
+
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+
+    local hum = char:FindFirstChildOfClass("Humanoid")
+
+    if not hrp or not hum or hum.Health <= 0 then return end
+
+
+
+    EnsureFlingBypass()
+
+
+
+    -- Fall Rescue
+
+    if hrp.Position.Y < MIN_SAFE_Y then
+
+        hrp.CFrame = CFrame.new(hrp.Position.X, DEFAULT_GROUND_Y, hrp.Position.Z)
+
+        hrp.AssemblyLinearVelocity = Vector3.zero
+
+        RecoverFromRagdoll(char)
+
+    end
+
+
+
+    if char:GetAttribute("Ragdolled") == true then
+
+        RecoverFromRagdoll(char)
+
+    end
+
+end)
+
+
+
+local function IsHoldingPack()
+
+    if ServerData then
+
+        local ok, stealing = pcall(function()
+
+            local s = ServerData.Get("Stealing")
+
+            return s and s[tostring(LocalPlayer.UserId)] ~= nil
+
+        end)
+
+        if ok and stealing then
+
+            return true
+
+        end
+
+    end
+
+
+
+    local pg = LocalPlayer:FindFirstChild("PlayerGui")
+
+    local re = pg and pg:FindFirstChild("RunEffects")
+
+    if re and re:IsA("ScreenGui") and re.Enabled then
+
+        return true
+
+    end
+
+
+
+    local st = pg and pg:FindFirstChild("Stealing")
+
+    if st and st:IsA("ScreenGui") and st.Enabled then
+
+        return true
+
+    end
+
+
+
+    return false
+
+end
+
+
+
+local function UnequipHeldTools()
+
+    local char = LocalPlayer.Character
+
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+
+    if hum then
+
+        pcall(function() hum:UnequipTools() end)
+
+    end
+
+end
+
+
+
+local _lastSpeedCheck = 0
+
+local _cachedSpeedStat = 0
+
+local _cachedExpected = 35
+
+
+
+local function GetSafeMaxSpeed(customMultiplier)
+
+    local now = os.clock()
+
+    if now - _lastSpeedCheck > 0.3 then
+
+        _lastSpeedCheck = now
+
+        if not PlayerData then
+
+            pcall(function() PlayerData = require(ReplicatedStorage.Shared.Modules.DataReceiver.PlayerData) end)
+
+        end
+
+        if not SpeedConfig then
+
+            pcall(function() SpeedConfig = require(ReplicatedStorage.Shared.Configs.SpeedConfig) end)
+
+        end
+
+        if PlayerData and PlayerData.Get then
+
+            _cachedSpeedStat = tonumber(PlayerData.Get("Speed")) or 0
+
+        end
+
+        if SpeedConfig and SpeedConfig.ToWalkSpeed then
+
+            _cachedExpected = SpeedConfig.ToWalkSpeed(_cachedSpeedStat, false)
+
+        end
+
+    end
+
+
+
+    -- Factor in pack weight carry multiplier if carrying a pack (prevents Error 267 server kick)
+
+    local carryMult = 1
+
+    if ServerData and ServerData.Get and AdminAbuseConfig and AdminAbuseConfig.GetCarrySpeedMultiplier then
+
+        local s = ServerData.Get("Stealing")
+
+        local stealingData = type(s) == "table" and s[tostring(LocalPlayer.UserId)]
+
+        if type(stealingData) == "table" and stealingData.Heavy and stealingData.Weight then
+
+            carryMult = AdminAbuseConfig.GetCarrySpeedMultiplier(stealingData.Weight)
+
+        end
+
+    end
+
+
+
+    local baseSpeed = math.max(_cachedExpected * carryMult, 20)
+
+    local mult = customMultiplier or 1.55
+
+    local safeSpeed = math.floor(baseSpeed * mult)
+
+    return math.clamp(safeSpeed, 35, 300), _cachedSpeedStat, _cachedExpected
+
+end
+
+
+
+local function GetMultiEnemyAvoidance(curPos)
+
+    local packsFolder = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Packs")
+
+    if not packsFolder then return Vector3.zero end
+
+
+
+    local avoid = Vector3.zero
+
+    for _, stage in ipairs(packsFolder:GetChildren()) do
+
+        local enemy = stage:FindFirstChild("Enemy")
+
+        local primary = enemy and (enemy.PrimaryPart or enemy:FindFirstChildWhichIsA("BasePart", true))
+
+        if primary then
+
+            local ePos = primary.Position
+
+            local deltaX = curPos.X - ePos.X
+
+            local deltaZ = curPos.Z - ePos.Z
+
+            local dist2D = math.sqrt(deltaX * deltaX + deltaZ * deltaZ)
+
+
+
+            if dist2D < 25 and dist2D > 0.1 then
+
+                local dodgeDir = (ePos.Z > CORRIDOR_Z_CENTER) and -0.8 or 0.8
+
+                avoid = avoid + Vector3.new(0, 0, dodgeDir)
+
+            end
+
+        end
+
+    end
+
+    return avoid
+
+end
+
+
+
+local function GroundGlideTo(targetPos, stopDistance, stageName, speedOverride)
+
+    stopDistance = stopDistance or 2.5
+
+    local maxSafe, curStat, expectedWS = GetSafeMaxSpeed()
+
+    local speed = speedOverride and math.min(speedOverride, maxSafe) or maxSafe
+
+
+
+    local hrp, hum = GetCharParts()
+
+    if not hrp or not hum or hum.Health <= 0 then return false end
+
+
+
+    StopGroundMovement()
+
+    EnsureFlingBypass()
+
+
+
+    local initialDist = (Vector3.new(targetPos.X, 0, targetPos.Z) - Vector3.new(hrp.Position.X, 0, hrp.Position.Z)).Magnitude
+
+    local dynamicTimeout = math.max((initialDist / math.max(speed, 25)) + 8, 20)
+
+    local t0 = os.clock()
+
+    local reached = false
+
+
+
+    activeGroundConn = RunService.Heartbeat:Connect(function()
+
+        if not Config.IsFarmRunning or not hrp or not hrp.Parent or hum.Health <= 0 then
+
+            reached = true
+
+            StopGroundMovement()
+
+            return
+
+        end
+
+
+
+        if IsInDungeon and IsInDungeon() then
+
+            reached = true
+
+            StopGroundMovement()
+
+            return
+
+        end
+
+
+
+        if LocalPlayer.Character and LocalPlayer.Character:GetAttribute("Ragdolled") == true then
+
+            RecoverFromRagdoll(LocalPlayer.Character)
+
+        end
+
+
+
+        local curPos = hrp.Position
+
+
+
+        -- Never fall through floor anywhere on the map
+
+        if curPos.Y < 68.5 then
+
+            hrp.CFrame = CFrame.new(curPos.X, DEFAULT_GROUND_Y, curPos.Z)
+
+            hrp.AssemblyLinearVelocity = Vector3.new(hrp.AssemblyLinearVelocity.X, 0, hrp.AssemblyLinearVelocity.Z)
+
+        end
+
+
+
+        local delta2D = Vector3.new(targetPos.X - curPos.X, 0, targetPos.Z - curPos.Z)
+
+        local dist2D = delta2D.Magnitude
+
+
+
+        if dist2D <= stopDistance or (targetPos == STAGING_POSITION and curPos.X <= 1155.0 and dist2D <= 8.0) or (os.clock() - t0 > dynamicTimeout) then
+
+            reached = true
+
+            StopGroundMovement()
+
+            return
+
+        end
+
+
+
+        speed = GetSafeMaxSpeed()
+
+        local dir2D = delta2D.Unit
+
+
+
+        -- Smooth Corridor wall deflection & full enemy avoidance (No CFrame teleport snaps = Zero Rubberbanding!)
+
+        if IsInCorridor(curPos) then
+
+            local evadeVec = GetMultiEnemyAvoidance(curPos)
+
+            if evadeVec.Magnitude > 0 then
+
+                local testZ = curPos.Z + (dir2D.Z + evadeVec.Z) * 6
+
+                if testZ > (CORRIDOR_Z_MAX - 8) or testZ < (CORRIDOR_Z_MIN + 8) then
+
+                    evadeVec = Vector3.new(0, 0, -evadeVec.Z)
+
+                end
+
+                dir2D = (dir2D + evadeVec).Unit
+
+            end
+
+
+
+            if curPos.Z > (CORRIDOR_Z_MAX - 6) and dir2D.Z > 0 then
+
+                dir2D = Vector3.new(dir2D.X, 0, -0.6).Unit
+
+            elseif curPos.Z < (CORRIDOR_Z_MIN + 6) and dir2D.Z < 0 then
+
+                dir2D = Vector3.new(dir2D.X, 0, 0.6).Unit
+
+            end
+
+        end
+
+
+
+        hum.WalkSpeed = speed
+
+        hum:Move(dir2D, false)
+
+
+
+        local currentYVel = math.max(hrp.AssemblyLinearVelocity.Y, -8)
+
+        hrp.AssemblyLinearVelocity = Vector3.new(dir2D.X * speed, currentYVel, dir2D.Z * speed)
+
+    end)
+
+    getgenv()._AnimeGroundConn = activeGroundConn
+
+
+
+    while not reached and Config.IsFarmRunning and hrp and hum.Health > 0 and (os.clock() - t0 <= dynamicTimeout) do
+
+        task.wait(0.02)
+
+    end
+
+
+
+    StopGroundMovement()
+
+    task.wait(0.04)
+
+    return true
+
+end
+
+
+
+-- Function to go to staging position (1155, 71, -363)
+
+local function GoToStagingPosition(reason)
+
+    local hrp, hum = GetCharParts()
+
+    if not hrp or not hum or hum.Health <= 0 then return false end
+
+
+
+    local curPos = hrp.Position
+
+    local dist2D = (Vector3.new(STAGING_POSITION.X, 0, STAGING_POSITION.Z) - Vector3.new(curPos.X, 0, curPos.Z)).Magnitude
+
+
+
+    if dist2D <= 3.0 then
+
+        return true
+
+    end
+
+
+
+    Config.Status = string.format("กำลังไปจุดเตรียมตัว (1155, 71, -363) [%s]...", reason or "Staging")
+
+    return GroundGlideTo(STAGING_POSITION, 2.0, "LobbyStaging")
+
+end
+
+
+
+-- ============================================================================
+
+-- 9. TREADMILL CONTROLLER
+
+-- ============================================================================
+
+local function IsOnTreadmill()
+
+    return LocalPlayer:GetAttribute("TrainingOnTreadmill") ~= nil
+
+end
+
+
+
+local function ExitTreadmill()
+
+    if not IsOnTreadmill() then return end
+
+    pcall(function()
+
+        if Remotes and Remotes.Get then
+
+            local exitRemote = Remotes.Get("Treadmill", "ExitRequest")
+
+            if exitRemote then
+
+                exitRemote:Fire()
+
+            end
+
+        end
+
+    end)
+
+    local hrp, hum = GetCharParts()
+
+    if hum then
+
+        hum.Jump = true
+
+        hum:ChangeState(Enum.HumanoidStateType.Jumping)
+
+    end
+
+    local t0 = os.clock()
+
+    while IsOnTreadmill() and (os.clock() - t0 < 1.5) do
+
+        task.wait(0.05)
+
+    end
+
+end
+
+
+
+local function GetPlayerTreadmillPosition()
+
+    local myPlotFolder = nil
+
+    if PlotUtil and PlotUtil.GetPlotByUserId then
+
+        local ok, plotData = pcall(function() return PlotUtil.GetPlotByUserId(LocalPlayer.UserId) end)
+
+        if ok and plotData then
+
+            local plots = Workspace:FindFirstChild("Plots")
+
+            myPlotFolder = plots and (plots:FindFirstChild(tostring(plotData.Name)) or plots:FindFirstChild(tostring(plotData.Index)))
+
+        end
+
+    end
+
+
+
+    if not myPlotFolder then
+
+        local plots = Workspace:FindFirstChild("Plots")
+
+        if plots then
+
+            for _, pl in ipairs(plots:GetChildren()) do
+
+                local sign = pl:FindFirstChild("Sign", true) or pl:FindFirstChild("Owner", true)
+
+                if sign and sign:IsA("TextLabel") and sign.Text:find(LocalPlayer.Name) then
+
+                    myPlotFolder = pl
+
+                    break
+
+                end
+
+            end
+
+        end
+
+    end
+
+
+
+    if myPlotFolder then
+
+        local tm = myPlotFolder:FindFirstChild("Treadmil") or myPlotFolder:FindFirstChild("Treadmill")
+
+        if tm then
+
+            -- 1. Exact conveyor belt pad (PurplePad)
+
+            local pad = tm:FindFirstChild("PurplePad") or tm:FindFirstChild("PurplePad", true)
+
+            if pad then
+
+                return pad:GetPivot().Position
+
+            end
+
+
+
+            -- 2. PlayerTreadmill Primary or Seat
+
+            local pTm = tm:FindFirstChild("PlayerTreadmill") or tm:FindFirstChild("PlayerTreadmill", true)
+
+            if pTm then
+
+                local seat = pTm:FindFirstChild("Seat") or pTm:FindFirstChild("Primary") or pTm.PrimaryPart
+
+                if seat then
+
+                    return seat.Position
+
+                end
+
+            end
+
+        end
+
+    end
+
+
+
+    -- Fallback to TreadmillUtil.GetMachine
+
+    if TreadmillUtil and TreadmillUtil.GetMachine then
+
+        local machine = TreadmillUtil.GetMachine(LocalPlayer.UserId)
+
+        if machine then
+
+            local pad = machine.Parent and machine.Parent:FindFirstChild("PurplePad")
+
+            if pad then
+
+                return pad:GetPivot().Position
+
+            end
+
+            local primary = machine:FindFirstChild("Seat") or machine:FindFirstChild("Primary") or machine.PrimaryPart
+
+            if primary then
+
+                return primary.Position
+
+            end
+
+        end
+
+    end
+
+
+
+    return Vector3.new(1140.98, 70.0, -261.86)
+
+end
+
+
+
+local function EnterTreadmill()
+
+    if IsOnTreadmill() then return true end
+
+    UnequipHeldTools()
+
+    local tmPos = GetPlayerTreadmillPosition()
+
+    if not tmPos then return false end
+
+
+
+    GroundGlideTo(Vector3.new(tmPos.X, 71.0, tmPos.Z), 1.5)
+
+
+
+    local t0 = os.clock()
+
+    while not IsOnTreadmill() and (os.clock() - t0 < 3.0) do
+
+        local hrp, hum = GetCharParts()
+
+        if hrp and hum then
+
+            hum:MoveTo(tmPos)
+
+            local curPos = hrp.Position
+
+            local dist2D = (Vector3.new(tmPos.X, 0, tmPos.Z) - Vector3.new(curPos.X, 0, curPos.Z)).Magnitude
+
+            if dist2D <= 3.5 then
+
+                hrp.CFrame = CFrame.new(tmPos.X, tmPos.Y + 2.0, tmPos.Z)
+
+            end
+
+        end
+
+        task.wait(0.08)
+
+    end
+
+    return IsOnTreadmill()
+
+end
+
+
+
+-- ============================================================================
+
+-- 9.1 AUTO TREADMILL UPGRADE & AUTO REBIRTH ENGINE
+
+-- ============================================================================
+
+local function GetPlayerTreadmillUpgradePosition()
+
+    if TreadmillUtil and TreadmillUtil.GetUpgradeTarget then
+
+        local ok, target = pcall(function() return TreadmillUtil.GetUpgradeTarget(LocalPlayer.UserId) end)
+
+        if ok and target then
+
+            local button = target:FindFirstChild("Button") or target:FindFirstChild("OverHead")
+
+            if button then
+
+                local okPivot, pivot = pcall(function() return button:GetPivot().Position end)
+
+                if okPivot and pivot then return pivot end
+
+                if button:IsA("BasePart") then return button.Position end
+
+            end
+
+            local okPivot, pivot = pcall(function() return target:GetPivot().Position end)
+
+            if okPivot and pivot then return pivot end
+
+        end
+
+    end
+
+
+
+    local tmPos = GetPlayerTreadmillPosition()
+
+    if tmPos then
+
+        return Vector3.new(tmPos.X - 4.5, 71.0, tmPos.Z + 9.6)
+
+    end
+
+    return Vector3.new(1136.37, 70.8, -252.17)
+
+end
+
+
+
+local function CanUpgradeTreadmill()
+
+    if not TreadmillConfig or not PlayerData then return false, nil, nil end
+
+    local curLevelName = TreadmillConfig.NormalizeLevelName(PlayerData.Get(TreadmillConfig.Upgrade.DataName))
+
+    local nextPrice = TreadmillConfig.GetPriceForNextLevel(curLevelName)
+
+    local curCash = tonumber(PlayerData.Get("Cash")) or 0
+
+
+
+    -- Strict check: Price must exist (> 0) and cash must be strictly >= nextPrice
+
+    if nextPrice and type(nextPrice) == "number" and nextPrice > 0 and curCash >= nextPrice then
+
+        return true, nextPrice, curLevelName
+
+    end
+
+    return false, nextPrice, curLevelName
+
+end
+
+
+
+local lastUpgradeAttempt = 0
+
+local isUpgradingTreadmill = false
+
+
+
+local function TryUpgradeTreadmill(force)
+
+    if not Config.AutoUpgradeTreadmill and not force then return false end
+
+    if isUpgradingTreadmill then return false end
+
+
+
+    -- Strict condition: Only proceed if money is strictly reached
+
+    local canUp, nextPrice, curLevelName = CanUpgradeTreadmill()
+
+    if not canUp then
+
+        return false
+
+    end
+
+
+
+    if os.clock() - lastUpgradeAttempt < 2.5 then return false end
+
+
+
+    local hrp, hum = GetCharParts()
+
+    if not hrp or not hum then return false end
+
+
+
+    -- Server requires player to be near their plot's treadmill button
+
+    local isAtBase = hrp.Position.X <= STAGE_CORRIDOR_ENTRY_X
+
+    if not isAtBase and not force then return false end
+
+
+
+    isUpgradingTreadmill = true
+
+    lastUpgradeAttempt = os.clock()
+
+
+
+    local wasOnTm = IsOnTreadmill()
+
+    if wasOnTm then
+
+        ExitTreadmill()
+
+        task.wait(0.15)
+
+    end
+
+
+
+    local btnPos = GetPlayerTreadmillUpgradePosition()
+
+    local priceFormatted = NumberFormatter and NumberFormatter.FormatCompact(nextPrice) or tostring(nextPrice)
+
+    Config.Status = string.format("เงินถึงเกณฑ์แล้ว! กำลังอัปเกรดลู่วิ่ง ($%s)...", priceFormatted)
+
+
+
+    -- Step to the upgrade button
+
+    GroundGlideTo(Vector3.new(btnPos.X, 71.0, btnPos.Z), 2.0)
+
+    task.wait(0.2)
+
+
+
+    local ok, res = pcall(function()
+
+        return Remotes.Get("Treadmill", "Upgrade"):Invoke({})
+
+    end)
+
+
+
+    if ok and type(res) == "table" and res.Success then
+
+        pcall(function()
+
+            if WindUI and WindUI.Notify then
+
+                WindUI:Notify({
+
+                    Title = "Treadmill Upgraded!",
+
+                    Content = string.format("อัปเกรดลู่วิ่งเป็น %s สำเร็จ!", tostring(res.LevelName or res.Level)),
+
+                    Duration = 3
+
+                })
+
+            end
+
+        end)
+
+    end
+
+
+
+    isUpgradingTreadmill = false
+
+
+
+    if wasOnTm or Config.AutoTreadmillWhenEmpty then
+
+        EnterTreadmill()
+
+    end
+
+    return ok and type(res) == "table" and res.Success
+
+end
+
+
+
+local lastRebirthAttempt = 0
+
+local function TryRebirth(force)
+
+    if not Config.AutoRebirth and not force then return false end
+
+    if os.clock() - lastRebirthAttempt < 2.5 then return false end
+
+    if not RebirthUtil or not PlayerData or not Remotes then return false end
+
+
+
+    local speed = tonumber(PlayerData.Get("Speed")) or 0
+
+    local count = RebirthUtil.GetCount(LocalPlayer)
+
+    local req = RebirthUtil.GetRequirement(count)
+
+
+
+    if req and (speed >= req or force) and req > 0 then
+
+        lastRebirthAttempt = os.clock()
+
+        Config.Status = string.format("กำลังรีเบิร์ธ (ครั้งที่ %d -> %d)...", count, count + 1)
+
+        local ok, res = pcall(function()
+
+            return Remotes.Get("Rebirth", "Request"):Invoke()
+
+        end)
+
+        if ok and type(res) == "table" and res.Success then
+
+            pcall(function()
+
+                if WindUI and WindUI.Notify then
+
+                    WindUI:Notify({
+
+                        Title = "Rebirth Successful!",
+
+                        Content = string.format("รีเบิร์ธสำเร็จ! ปัจจุบัน Rebirth ครั้งที่ %d (ตัวคูณเพิ่มขึ้น)", count + 1),
+
+                        Duration = 3
+
+                    })
+
+                end
+
+            end)
+
+            return true
+
+        end
+
+    end
+
+    return false
+
+end
+
+
+
+-- Autonomous Background Monitor for Rebirth & Treadmill Upgrade (Only triggers when money/speed is strictly reached)
+
+task.spawn(function()
+
+    while true do
+
+        task.wait(1.0)
+
+        pcall(function()
+
+            if Config.AutoRebirth then
+
+                TryRebirth()
+
+            end
+
+            if Config.AutoUpgradeTreadmill then
+
+                local canUp = CanUpgradeTreadmill()
+
+                if canUp then
+
+                    local hrp = GetCharParts()
+
+                    local isAtBase = hrp and (hrp.Position.X <= STAGE_CORRIDOR_ENTRY_X)
+
+                    if isAtBase then
+
+                        TryUpgradeTreadmill()
+
+                    end
+
+                end
+
+            end
+
+        end)
+
+    end
+
+end)
+
+
+
+-- ============================================================================
+
+-- 10. MULTI-STAGE TARGET FINDER (WITH STREAMING SUPPORT & BLACKLIST)
+
+-- ============================================================================
+
+local TargetBlacklist = {}
+
+
+
+local function FindBestTargetInActiveStages()
+
+    local candidates = {}
+
+    local packsRoot = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Packs")
+
+    if not packsRoot then return nil end
+
+
+
+    local maxStage = 13
+
+    if packsRoot then
+
+        for _, child in ipairs(packsRoot:GetChildren()) do
+
+            local sNum = tonumber(string.match(child.Name, "%d+"))
+
+            if sNum and sNum > maxStage then
+
+                maxStage = sNum
+
+            end
+
+        end
+
+    end
+
+
+
+    for stageIdx = 1, maxStage do
+
+        local stageName = "Stage" .. stageIdx
+
+        if IsStageEnabled(stageName) then
+
+            local stageFolder = packsRoot:FindFirstChild(stageName)
+
+            local spawnedFolder = stageFolder and stageFolder:FindFirstChild("SpawnedPacks")
+
+            if spawnedFolder then
+
+                for _, pack in ipairs(spawnedFolder:GetChildren()) do
+
+                    if pack.Name ~= "PackAreaRock" then
+
+                        -- Check blacklist timeout (prevents repeatedly targeting stuck/glitched packs)
+
+                        local blacklistedAt = TargetBlacklist[pack]
+
+                        if not blacklistedAt or (os.clock() - blacklistedAt > 10) then
+
+                            local odd = 1
+
+                            local rarity = "Common"
+
+                            if CharacterConfig and CharacterConfig.Get then
+
+                                local charData = CharacterConfig.Get(pack.Name)
+
+                                if charData then
+
+                                    odd = charData.NumericalOdd or 1
+
+                                    rarity = charData.Rarity or "Unknown"
+
+                                end
+
+                            end
+
+
+
+                            local hasAnyRarityFilter = false
+
+                            for _, v in pairs(Config.TargetRarities) do
+
+                                if v == true then hasAnyRarityFilter = true break end
+
+                            end
+
+
+
+                            local isAllowed = not hasAnyRarityFilter
+
+                                or (Config.TargetRarities["All"] == true)
+
+                                or (Config.TargetRarities["ทุกระดับ (All Rarities)"] == true)
+
+                                or (Config.TargetRarities[rarity] == true)
+
+
+
+                            if isAllowed then
+
+                                local prompt = pack:FindFirstChild("StealPrompt", true) 
+
+                                    or pack:FindFirstChildWhichIsA("ProximityPrompt", true)
+
+
+
+                                local packPos = nil
+
+                                if prompt and prompt.Parent then
+
+                                    if prompt.Parent:IsA("Attachment") then
+
+                                        packPos = prompt.Parent.WorldPosition
+
+                                    elseif prompt.Parent:IsA("BasePart") then
+
+                                        packPos = prompt.Parent.Position
+
+                                    end
+
+                                end
+
+
+
+                                if not packPos then
+
+                                    local sphere = pack:FindFirstChild("Sphere")
+
+                                    if sphere and sphere:IsA("BasePart") then
+
+                                        packPos = sphere.Position
+
+                                    elseif pack.PrimaryPart then
+
+                                        packPos = pack.PrimaryPart.Position
+
+                                    else
+
+                                        local ok, pPos = pcall(function() return pack:GetPivot().Position end)
+
+                                        if ok and pPos then
+
+                                            packPos = pPos
+
+                                        end
+
+                                    end
+
+                                end
+
+
+
+                                if packPos then
+
+                                    table.insert(candidates, {
+
+                                        Pack = pack,
+
+                                        Name = pack.Name,
+
+                                        Stage = stageName,
+
+                                        Odd = odd,
+
+                                        Rarity = rarity,
+
+                                        Position = packPos,
+
+                                        Prompt = prompt
+
+                                    })
+
+                                end
+
+                            end
+
+                        end
+
+                    end
+
+                end
+
+            end
+
+        end
+
+    end
+
+
+
+    if #candidates == 0 then return nil end
+
+
+
+    local hrp = GetCharParts()
+
+    local myPos = hrp and hrp.Position or STAGING_POSITION
+
+
+
+    -- จัดลำดับตามการตั้งค่า: หากเปิดเน้นฟาร์มด่านท้าย จะเลือกด่านท้ายสุด (เช่น Stage 13) ก่อน
+
+    table.sort(candidates, function(a, b)
+
+        if Config.PrioritizeEndStage then
+
+            local numA = tonumber(string.match(a.Stage, "%d+")) or 0
+
+            local numB = tonumber(string.match(b.Stage, "%d+")) or 0
+
+            if numA ~= numB then
+
+                return numA > numB -- ด่านท้ายสุด (เลขด่านสูงกว่า) มาก่อนเสมอ
+
+            end
+
+        end
+
+        local distA = (Vector3.new(a.Position.X, 0, a.Position.Z) - Vector3.new(myPos.X, 0, myPos.Z)).Magnitude
+
+        local distB = (Vector3.new(b.Position.X, 0, b.Position.Z) - Vector3.new(myPos.X, 0, myPos.Z)).Magnitude
+
+        return distA < distB
+
+    end)
+
+
+
+    return candidates[1]
+
+end
+
+
+
+-- ============================================================================
+
+-- 11. AUTO SELL HANDLER & CARD AUTOMATION ENGINE
+
+-- ============================================================================
+
+local function TryAutoSell()
+
+    if not Config.AutoSellCommon or not PlayerData then return end
+
+    pcall(function()
+
+        local inv = PlayerData.Get("Inventory")
+
+        local backpack = inv and inv.Packs and inv.Packs.Backpack or {}
+
+        local toSell = {}
+
+        for _, p in pairs(backpack) do
+
+            if type(p) == "table" and (p.Rarity == "Common" or p.Rarity == "Uncommon") then
+
+                table.insert(toSell, p.Id)
+
+            end
+
+        end
+
+        if #toSell > 0 then
+
+            local economyRemote = ReplicatedStorage:FindFirstChild("Remotes") 
+
+                and ReplicatedStorage.Remotes:FindFirstChild("Economy")
+
+                and ReplicatedStorage.Remotes.Economy:FindFirstChild("SellItems")
+
+            if economyRemote then
+
+                economyRemote:InvokeServer(toSell)
+
+            end
+
+        end
+
+    end)
+
+end
+
+
+
+-- ============================================================================
+
+-- 11.1 DISCORD WEBHOOK & PACK OPEN HOOK
+
+-- ============================================================================
+
+local function RequestHttp(options)
+
+    local fn = (syn and syn.request) or (http and http.request) or http_request or request or (fluxus and fluxus.request)
+
+    if fn then
+
+        return fn(options)
+
+    end
+
+    return nil
+
+end
+
+
+
+local function SendDiscordWebhook(webhookUrl, data)
+
+    if not webhookUrl or webhookUrl == "" then return end
+
+    
+
+    local rarityColors = {
+
+        Common = 0x808080,
+
+        Uncommon = 0x2ECC71,
+
+        Rare = 0x3498DB,
+
+        Epic = 0x9B59B6,
+
+        Legendary = 0xF1C40F,
+
+        Mythical = 0xE67E22,
+
+        Cosmic = 0x00D2D3,
+
+        Divine = 0xFFD700,
+
+        Eternal = 0x54A0FF,
+
+        Omniversal = 0x5F27CD,
+
+        Omniversal = 0x5F27CD,
+
+        Eternal = 0x54A0FF,
+
+        Primordial = 0xFF4757,
+
+        Exclusive = 0xFF6B81,
+
+        Godlike = 0xFF0033,
+
+        Absolute = 0xFF1493,
+
+        ["???"] = 0x1F1F1F,
+
+        Immortal = 0xE0FFFF
+
+    }
+
+    
+
+    local rColor = rarityColors[data.Rarity] or 0xFFFFFF
+
+    local pName = (LocalPlayer and LocalPlayer.Name) or "Player"
+
+    local pDisplay = (LocalPlayer and LocalPlayer.DisplayName) or pName
+
+    
+
+    local payload = {
+
+        username = "Anime Pack Bot",
+
+        avatar_url = "https://i.imgur.com/4M34hi2.png",
+
+        embeds = {
+
+            {
+
+                title = data.Title or "✨ Rare Card Notification!",
+
+                color = rColor,
+
+                fields = {
+
+                    { name = "👤 Player", value = string.format("`%s` (@%s)", pDisplay, pName), inline = true },
+
+                    { name = "🃏 Card / Pack", value = string.format("**%s**", tostring(data.Name or data.CharacterName or "Unknown")), inline = true },
+
+                    { name = "⭐ Rarity", value = string.format("`%s`", tostring(data.Rarity or "Unknown")), inline = true },
+
+                    { name = "⚖️ Weight", value = string.format("`%s`", tostring(data.Weight or "N/A")), inline = true },
+
+                    { name = "🧪 Mutation", value = string.format("`%s`", tostring(data.Mutation or "None")), inline = true },
+
+                    { name = "🕒 Time", value = os.date("%Y-%m-%d %H:%M:%S"), inline = true }
+
+                },
+
+                footer = {
+
+                    text = "Steal An Anime Pack • Master Automation"
+
+                },
+
+                timestamp = DateTime.now():ToIsoDate()
+
+            }
+
+        }
+
+    }
+
+    
+
+    pcall(function()
+
+        RequestHttp({
+
+            Url = webhookUrl,
+
+            Method = "POST",
+
+            Headers = {
+
+                ["Content-Type"] = "application/json"
+
+            },
+
+            Body = HttpService:JSONEncode(payload)
+
+        })
+
+    end)
+
+end
+
+
+
+-- Hook Pack Open remote to fast-finish roll & send webhook
+
+pcall(function()
+
+    if Remotes and Remotes.Get then
+
+        local openEv = Remotes.Get("Packs", "Open")
+
+        if openEv and typeof(openEv) == "Instance" and openEv:IsA("RemoteEvent") then
+
+            openEv.OnClientEvent:Connect(function(packData)
+
+                if type(packData) == "table" and packData.PackId then
+
+                    -- 1. Fast finish roll animation
+
+                    pcall(function()
+
+                        Remotes.Get("Packs", "Opened"):Fire(packData.PackId)
+
+                    end)
+
+                    
+
+                    -- 2. Discord Webhook notification
+
+                    if Config.DiscordWebhookEnabled and Config.DiscordWebhookUrl ~= "" then
+
+                        local rarity = packData.Rarity or "Common"
+
+                        local rarityRank = PacksConfig and PacksConfig.RarityRank
+
+                        local cardRank = (rarityRank and rarityRank[rarity]) or 1
+
+                        local minRank = (rarityRank and rarityRank[Config.WebhookMinRarity]) or 6
+
+                        if cardRank >= minRank then
+
+                            task.spawn(function()
+
+                                SendDiscordWebhook(Config.DiscordWebhookUrl, {
+
+                                    Title = "🎉 Hatched Rare Card!",
+
+                                    Name = packData.Character or packData.CharacterName or packData.Pack or "Unknown",
+
+                                    Rarity = rarity,
+
+                                    Weight = packData.Weight,
+
+                                    Mutation = packData.Mutation
+
+                                })
+
+                            end)
+
+                        end
+
+                    end
+
+                end
+
+            end)
+
+        end
+
+    end
+
+end)
+
+
+
+-- ============================================================================
+
+-- 11.2 AUTO OPEN PLACED PACKS
+
+-- ============================================================================
+
+local function TryAutoOpenPlacedPacks()
+
+    if not Config.AutoOpenCards or not PlayerData or not Remotes then return end
+
+    pcall(function()
+
+        local inv = PlayerData.Get("Inventory")
+
+        local placed = inv and inv.Packs and inv.Packs.Placed
+
+        if type(placed) ~= "table" then return end
+
+        
+
+        local serverTime = Workspace:GetServerTimeNow()
+
+        local openRemote = Remotes.Get("Packs", "OpenOwned")
+
+        if not openRemote then return end
+
+        
+
+        for _, pack in pairs(placed) do
+
+            if type(pack) == "table" and pack.Id and not pack.OpeningCommittedAt and not pack.OpenedAt then
+
+                local isReady = true
+
+                if pack.GrowthEndsAt then
+
+                    if serverTime < pack.GrowthEndsAt then
+
+                        isReady = false
+
+                    end
+
+                elseif HatcheryConfig and HatcheryConfig.GetGrowthDuration and HatcheryConfig.GetGrowthEndsAt then
+
+                    local duration = HatcheryConfig.GetGrowthDuration(pack, PacksConfig and PacksConfig.Placement and PacksConfig.Placement.Growth and PacksConfig.Placement.Growth.MinimumDurationSeconds or 10)
+
+                    local endsAt = HatcheryConfig.GetGrowthEndsAt(pack, duration)
+
+                    if endsAt and serverTime < endsAt then
+
+                        isReady = false
+
+                    end
+
+                end
+
+                
+
+                if isReady then
+
+                    pcall(function()
+
+                        openRemote:Invoke(pack.Id)
+
+                    end)
+
+                    task.wait(0.2)
+
+                end
+
+            end
+
+        end
+
+    end)
+
+end
+
+
+
+-- ============================================================================
+
+-- 11.3 AUTO PLACE CARDS
+
+-- ============================================================================
+
+local isPlacingCards = false
+
+local function TryAutoPlaceCards()
+
+    if not Config.AutoPlaceCards or isPlacingCards then return end
+
+    if not Remotes or not PlotUtil or not PlacementUtil then return end
+
+
+
+    local char = LocalPlayer.Character
+
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+    if not char or not hum or not hrp or hum.Health <= 0 then return end
+
+
+
+    local toolsToPlace = {}
+
+    local function checkTool(t)
+
+        if not t or not t:IsA("Tool") then return end
+
+        local packId = t:GetAttribute("PackId")
+
+        if not packId then return end
+
+        local r = t:GetAttribute("CardRarity") or t:GetAttribute("ItemRarity")
+
+        if not r and PacksConfig and PacksConfig.Get then
+
+            local pData = PacksConfig.Get(t.Name)
+
+            r = pData and pData.Rarity
+
+        end
+
+        if r and Config.SelectedPlaceRaritiesMap[r] then
+
+            table.insert(toolsToPlace, { Tool = t, PackId = packId, Rarity = r })
+
+        end
+
+    end
+
+
+
+    for _, t in ipairs(LocalPlayer.Backpack:GetChildren()) do
+
+        checkTool(t)
+
+    end
+
+    for _, t in ipairs(char:GetChildren()) do
+
+        checkTool(t)
+
+    end
+
+
+
+    if #toolsToPlace == 0 then return end
+
+
+
+    isPlacingCards = true
+
+    pcall(function()
+
+        if IsOnTreadmill and IsOnTreadmill() then
+
+            ExitTreadmill()
+
+            task.wait(0.3)
+
+        end
+
+
+
+        local plot = PlotUtil.GetPlotByUserId(LocalPlayer.UserId)
+
+        if not plot then return end
+
+        local area = PlotUtil.GetAnimeArea(plot.Name)
+
+        if not area then return end
+
+
+
+        local placeRemote = Remotes.Get("Packs", "PlaceOwned")
+
+        if not placeRemote then return end
+
+
+
+        if not PlacementUtil.IsPlayerInOwnedPlot(LocalPlayer) then
+
+            local prevStatus = Config.Status
+
+            Config.Status = "กำลังเดินไปที่แปลงการ์ดของตัวเองเพื่อวางการ์ด..."
+
+            local targetPlotPos = area.Position + Vector3.new(0, 3, 0)
+
+            GroundGlideTo(targetPlotPos, 2.5, "MoveToPlot")
+
+            task.wait(0.35)
+
+            Config.Status = prevStatus
+
+        end
+
+
+
+        for _, item in ipairs(toolsToPlace) do
+
+            local tool = item.Tool
+
+            if tool and tool.Parent and (tool.Parent == LocalPlayer.Backpack or tool.Parent == char) then
+
+                if tool.Parent ~= char then
+
+                    hum:EquipTool(tool)
+
+                    task.wait(0.25)
+
+                end
+
+
+
+                local targetPos = PlacementUtil.RandomPointInArea(area, 4)
+
+                if targetPos then
+
+                    pcall(function()
+
+                        placeRemote:Invoke({
+
+                            PackId = item.PackId,
+
+                            Position = targetPos
+
+                        })
+
+                    end)
+
+                    task.wait(0.3)
+
+                end
+
+            end
+
+        end
+
+    end)
+
+    isPlacingCards = false
+
+end
+
+
+
+-- ============================================================================
+
+-- 11.4 AUTO SELL SELECTED CARDS
+
+-- ============================================================================
+
+local function TryAutoSellSelectedCards()
+
+    if not Config.AutoSellSelectCards or not PlayerData or not Remotes then return end
+
+    pcall(function()
+
+        local inv = PlayerData.Get("Inventory")
+
+        local backpack = inv and inv.Packs and inv.Packs.Backpack
+
+        if type(backpack) ~= "table" then return end
+
+        
+
+        local toSell = {}
+
+        for _, item in pairs(backpack) do
+
+            if type(item) == "table" and item.Id then
+
+                local r = item.Rarity or (item.Data and item.Data.Rarity)
+
+                if not r and PacksConfig and PacksConfig.Get then
+
+                    local cData = PacksConfig.Get(item.PackName)
+
+                    r = cData and cData.Rarity
+
+                end
+
+                
+
+                if r and Config.SelectedSellRaritiesMap[r] then
+
+                    table.insert(toSell, item.Id)
+
+                    if #toSell >= 50 then break end
+
+                end
+
+            end
+
+        end
+
+        
+
+        if #toSell > 0 then
+
+            local sellRemote = Remotes.Get("Economy", "SellItems")
+
+            if sellRemote then
+
+                pcall(function()
+
+                    sellRemote:Invoke(toSell)
+
+                end)
+
+            end
+
+        end
+
+    end)
+
+end
+
+
+
+-- ============================================================================
+
+-- 11.5 AUTO BUY COACH & AURA
+
+-- ============================================================================
+
+local function TryAutoBuy()
+
+    if not PlayerData or not Remotes then return end
+
+    local cash = tonumber(PlayerData.Get("Cash")) or 0
+
+    if cash <= 0 then return end
+
+    
+
+    -- Auto Buy Best Coach
+
+    if Config.AutoBuyCoach and CoachConfig and CoachConfig.Coaches then
+
+        pcall(function()
+
+            local purchaseRemote = Remotes.Get("Coaches", "Purchase")
+
+            local equipRemote = Remotes.Get("Coaches", "Equip")
+
+            if not purchaseRemote then return end
+
+            
+
+            local coachesData = PlayerData.Get(CoachConfig.DataKey or "Coaches")
+
+            local owned = (type(coachesData) == "table" and coachesData.Owned) or {}
+
+            local equipped = (type(coachesData) == "table" and coachesData.Equipped)
+
+            
+
+            local bestAffordableCoach = nil
+
+            local highestOwnedCoach = nil
+
+            
+
+            for _, coach in ipairs(CoachConfig.Coaches) do
+
+                local isOwned = false
+
+                if CoachUtil and CoachUtil.GetCount then
+
+                    isOwned = CoachUtil.GetCount(coachesData, coach.Id) > 0
+
+                else
+
+                    isOwned = (owned[coach.Id] ~= nil and owned[coach.Id] ~= 0)
+
+                end
+
+                
+
+                if isOwned then
+
+                    highestOwnedCoach = coach
+
+                end
+
+                if coach.Price and cash >= coach.Price and not coach.Featured and not coach.Limited then
+
+                    bestAffordableCoach = coach
+
+                end
+
+            end
+
+            
+
+            if bestAffordableCoach then
+
+                local isOwned = false
+
+                if CoachUtil and CoachUtil.GetCount then
+
+                    isOwned = CoachUtil.GetCount(coachesData, bestAffordableCoach.Id) > 0
+
+                else
+
+                    isOwned = (owned[bestAffordableCoach.Id] ~= nil and owned[bestAffordableCoach.Id] ~= 0)
+
+                end
+
+                
+
+                if not isOwned then
+
+                    pcall(function()
+
+                        purchaseRemote:Invoke(bestAffordableCoach.Id)
+
+                    end)
+
+                end
+
+            end
+
+            
+
+            if highestOwnedCoach and equipRemote and equipped ~= highestOwnedCoach.Id then
+
+                pcall(function()
+
+                    equipRemote:Invoke(highestOwnedCoach.Id)
+
+                end)
+
+            end
+
+        end)
+
+    end
+
+    
+
+    -- Auto Buy Best Aura
+
+    if Config.AutoBuyAura and AurasConfig and AurasConfig.Ordered then
+
+        pcall(function()
+
+            local purchaseRemote = Remotes.Get("Auras", "Purchase")
+
+            local equipRemote = Remotes.Get("Auras", "Equip")
+
+            if not purchaseRemote then return end
+
+            
+
+            local aurasData = PlayerData.Get("Auras")
+
+            local owned = (type(aurasData) == "table" and aurasData.Owned) or {}
+
+            local equipped = (type(aurasData) == "table" and aurasData.Equipped)
+
+            
+
+            local bestAffordableAura = nil
+
+            local highestOwnedAura = nil
+
+            
+
+            for _, aura in ipairs(AurasConfig.Ordered) do
+
+                if owned[aura.Id] then
+
+                    highestOwnedAura = aura
+
+                end
+
+                if aura.CashPrice and cash >= aura.CashPrice then
+
+                    bestAffordableAura = aura
+
+                end
+
+            end
+
+            
+
+            if bestAffordableAura and not owned[bestAffordableAura.Id] then
+
+                pcall(function()
+
+                    purchaseRemote:Invoke(bestAffordableAura.Id)
+
+                end)
+
+            end
+
+            
+
+            if highestOwnedAura and equipRemote and equipped ~= highestOwnedAura.Id then
+
+                pcall(function()
+
+                    equipRemote:Invoke(highestOwnedAura.Id)
+
+                end)
+
+            end
+
+        end)
+
+    end
+
+end
+
+
+
+-- Background Daemon for Card Automation & Auto-Buy
+
+task.spawn(function()
+
+    while true do
+
+        task.wait(1.5)
+
+        pcall(function()
+
+            TryAutoOpenPlacedPacks()
+
+            TryAutoPlaceCards()
+
+            TryAutoSellSelectedCards()
+
+            TryAutoBuy()
+
+        end)
+
+    end
+
+end)
+
+
+
+-- ============================================================================
+
+-- 11.6 AUTO DOUBLE DUNGEONS ENGINE (STABLE & AUTOMATED 50B+ SPEED)
+
+-- ============================================================================
+
+local PORTAL_PAD_POS = Vector3.new(1181.35, 71.0, -514.10)
+
+local DungeonEngineStatus = "ปิดใช้งาน (Idle)"
+
+local lastDungeonAttempt = 0
+
+
+
+local function GetBestUnits(maxCount)
+
+    maxCount = maxCount or (TowerConfig and TowerConfig.TeamSize or 4)
+
+    if not PlayerData or not PacksConfig then return {} end
+
+    local inv = PlayerData.Get("Inventory")
+
+    if type(inv) ~= "table" or type(inv.Packs) ~= "table" then return {} end
+
+
+
+    local allUnits = {}
+
+    local seenIds = {}
+
+
+
+    local function addPack(pack)
+
+        if type(pack) == "table" and PacksConfig.IsCharacter(pack) and pack.Id and not seenIds[pack.Id] then
+
+            seenIds[pack.Id] = true
+
+            local dmg = 0
+
+            local hp = 0
+
+            if TowerUtil and TowerUtil.GetStats then
+
+                local stats = TowerUtil.GetStats(pack)
+
+                dmg = (stats and stats.Damage) or 0
+
+                hp = (stats and stats.Health) or 0
+
+            end
+
+            table.insert(allUnits, {
+
+                Id = pack.Id,
+
+                Name = pack.CharacterName or pack.PackName or "Unit",
+
+                Rarity = pack.Rarity or "Common",
+
+                Damage = dmg,
+
+                Health = hp
+
+            })
+
+        end
+
+    end
+
+
+
+    if type(inv.Packs.Placed) == "table" then
+
+        for _, p in pairs(inv.Packs.Placed) do addPack(p) end
+
+    end
+
+    if type(inv.Packs.Backpack) == "table" then
+
+        for _, p in pairs(inv.Packs.Backpack) do addPack(p) end
+
+    end
+
+
+
+    table.sort(allUnits, function(a, b)
+
+        return a.Damage > b.Damage
+
+    end)
+
+
+
+    local topIds = {}
+
+    for i = 1, math.min(#allUnits, maxCount) do
+
+        table.insert(topIds, allUnits[i].Id)
+
+    end
+
+    return topIds, allUnits
+
+end
+
+
+
+local function EquipBestTeam()
+
+    local topIds, allUnits = GetBestUnits()
+
+    if #topIds == 0 then return false end
+
+    if not Remotes then return false end
+
+    local ok, res = pcall(function()
+
+        return Remotes.Get("DungeonParty", "SetTeam"):Invoke(topIds)
+
+    end)
+
+    return ok and type(res) == "table" and res.Success
+
+end
+
+
+
+local function GetBestGears()
+
+    if not ItemConfig or not ItemConfig.Gears then return {}, {} end
+
+    local bestBySlot = {}
+
+    local allOwnedGears = {}
+
+    
+
+    for _, g in ipairs(ItemConfig.Gears) do
+
+        local def = CosmeticUtil and CosmeticUtil.Get(g.Id)
+
+        local count = def and CosmeticUtil.GetPlayerCount(LocalPlayer, def) or 0
+
+        local isEquipped = LocalPlayer and LocalPlayer:GetAttribute("Gear" .. g.Slot) == g.Id
+
+        if count > 0 or isEquipped then
+
+            table.insert(allOwnedGears, g)
+
+            local curBest = bestBySlot[g.Slot]
+
+            if not curBest or (g.Damage or 0) > (curBest.Damage or 0) then
+
+                bestBySlot[g.Slot] = g
+
+            end
+
+        end
+
+    end
+
+    
+
+    return bestBySlot, allOwnedGears
+
+end
+
+
+
+local function EquipBestGear()
+
+    local bestBySlot = GetBestGears()
+
+    if not Remotes then return false, false end
+
+    local equipRemote = Remotes.Get("Items", "Equip")
+
+    if not equipRemote then return false, false end
+
+    
+
+    local anyEquipped = false
+
+    local equippedCount = 0
+
+    for slot, bestGear in pairs(bestBySlot) do
+
+        local cur = LocalPlayer and LocalPlayer:GetAttribute("Gear" .. slot)
+
+        if cur ~= bestGear.Id then
+
+            local ok = pcall(function()
+
+                equipRemote:Invoke({
+
+                    Slot = slot,
+
+                    Id = bestGear.Id
+
+                })
+
+            end)
+
+            if ok then
+
+                anyEquipped = true
+
+                equippedCount = equippedCount + 1
+
+            end
+
+            task.wait(0.1)
+
+        end
+
+    end
+
+    return true, anyEquipped, equippedCount
+
+end
+
+
+
+local function ExitCurrentDungeon()
+
+    pcall(function()
+
+        if Remotes then
+
+            Remotes.Get("Towers", "Exit"):Fire()
+
+            Remotes.Get("DungeonParty", "Leave"):Fire()
+
+        end
+
+    end)
+
+end
+
+
+
+local function ClickGuiButton(btn)
+
+    if not btn then return end
+
+    pcall(function()
+
+        if firesignal then
+
+            pcall(function() firesignal(btn.MouseButton1Down) end)
+
+            pcall(function() firesignal(btn.MouseButton1Up) end)
+
+            pcall(function() firesignal(btn.MouseButton1Click) end)
+
+            pcall(function() firesignal(btn.Activated) end)
+
+        end
+
+        local conns = (getconnections and getconnections(btn.Activated)) or {}
+
+        for _, conn in ipairs(conns) do
+
+            if conn.Function then pcall(conn.Function) end
+
+            if conn.Fire then pcall(function() conn:Fire() end) end
+
+        end
+
+    end)
+
+end
+
+
+
+if getgenv()._AnimeStopWaveCleanup then
+
+    getgenv()._AnimeStopWaveCleanup()
+
+end
+
+local stopWaveTextConnection
+
+local stopWaveGuiConnection
+
+local stopWaveLabel
+
+local stopWaveTriggered = false
+
+local function CheckStopWave()
+
+    if not Config.StopAtWave or stopWaveTriggered or not IsInDungeon() or not stopWaveLabel then return end
+
+    local target = tonumber(Config.StopWaveNumber)
+
+    local wave = tonumber(stopWaveLabel.Text:match("[Ww]ave%s+(%d+)"))
+
+    if target and wave and wave >= target then
+
+        stopWaveTriggered = true
+
+        DungeonEngineStatus = "ถึง Wave " .. wave .. " กำลังออกจากดันเจี้ยน..."
+
+        ExitCurrentDungeon()
+
+    end
+
+end
+
+local function BindStopWave()
+
+    local gui = LocalPlayer:FindFirstChild("PlayerGui")
+
+    local hud = gui and gui:FindFirstChild("DungeonHud")
+
+    local top = hud and hud:FindFirstChild("TopBar")
+
+    local banner = top and top:FindFirstChild("Banner")
+
+    local label = banner and banner:FindFirstChild("wAVE")
+
+    if label == stopWaveLabel then return end
+
+    if stopWaveTextConnection then stopWaveTextConnection:Disconnect() end
+
+    stopWaveLabel = label and label:IsA("TextLabel") and label or nil
+
+    stopWaveTriggered = false
+
+    if stopWaveLabel then
+
+        stopWaveTextConnection = stopWaveLabel:GetPropertyChangedSignal("Text"):Connect(CheckStopWave)
+
+        CheckStopWave()
+
+    end
+
+end
+
+if PlayerGui then
+
+    stopWaveGuiConnection = PlayerGui.DescendantAdded:Connect(function(child)
+
+        if child.Name == "wAVE" or child.Name == "DungeonHud" then
+
+            task.defer(BindStopWave)
+
+        end
+
+    end)
+
+    BindStopWave()
+
+end
+
+getgenv()._AnimeStopWaveCleanup = function()
+
+    if stopWaveTextConnection then stopWaveTextConnection:Disconnect() end
+
+    if stopWaveGuiConnection then stopWaveGuiConnection:Disconnect() end
+
+end
+
+
+
+local function StepAutoDoubleDungeon()
+
+    if not Config.AutoDoubleDungeon then
+
+        DungeonEngineStatus = "ปิดใช้งาน (Idle)"
+
+        return
+
+    end
+
+
+
+    -- 1. ขณะกำลังต่อสู้ใน Double Dugeons
+
+    if IsInDungeon() then
+
+        DungeonEngineStatus = "กำลังต่อสู้ใน Double Dugeons (เปิด Auto โจมตีอยู่)..."
+
+        pcall(function()
+
+            if Remotes then
+
+                Remotes.Get("Towers", "SetAuto"):Fire(true)
+
+            end
+
+            local pg = LocalPlayer and LocalPlayer:FindFirstChild("PlayerGui")
+
+            local hud = pg and pg:FindFirstChild("DungeonHud")
+
+            local auto = hud and hud:FindFirstChild("Bottom") and hud.Bottom:FindFirstChild("Controls") and hud.Bottom.Controls:FindFirstChild("Auto")
+
+            local textChild = auto and auto:FindFirstChild("Text")
+
+            if textChild and textChild.Text == "AUTO: OFF" then
+
+                ClickGuiButton(auto)
+
+            end
+
+            if Config.AutoEquipBestGear then
+
+                EquipBestGear()
+
+            end
+
+        end)
+
+        return
+
+    end
+
+
+
+    -- 2. คูลดาวน์ระหว่างรอบ
+
+    if os.clock() - lastDungeonAttempt < 3.0 then
+
+        DungeonEngineStatus = "รอคูลดาวน์ก่อนเริ่มรอบใหม่..."
+
+        return
+
+    end
+
+
+
+    -- 3. ตรวจสอบเงื่อนไขตัวละคร (ไม่ติดถือการ์ด)
+
+    if IsHoldingPack and IsHoldingPack() then
+
+        DungeonEngineStatus = "รอส่งการ์ดที่ถือก่อนเข้า Double Dugeons..."
+
+        return
+
+    end
+
+
+
+    -- ลงจากลู่วิ่งหากกำลังวิ่งอยู่ (ป้องกัน error CantNow)
+
+    if IsOnTreadmill and IsOnTreadmill() then
+
+        DungeonEngineStatus = "กำลังลงจากลู่วิ่งเพื่อเตรียมเข้า Double Dugeons..."
+
+        ExitTreadmill()
+
+        task.wait(0.5)
+
+        if IsOnTreadmill() then return end
+
+    end
+
+
+
+    -- 4. ตรวจสอบ Speed (ต้องการ 50B+)
+
+    local speed = tonumber(PlayerData and PlayerData.Get and PlayerData.Get("Speed")) or 0
+
+    local minSpeed = (TowerConfig and TowerConfig.Portal and TowerConfig.Portal.MinimumSpeed) or 50000000000
+
+    if speed < minSpeed then
+
+        local spdStr = NumberFormatter and NumberFormatter.FormatCompact(speed) or tostring(speed)
+
+        DungeonEngineStatus = string.format("Speed ยังไม่ถึง 50B (มี %s / 50B)", spdStr)
+
+        return
+
+    end
+
+
+
+    -- 5. ตรวจสอบสถานะเปิดของประตูพอร์ทัล
+
+    if DungeonUtil and DungeonUtil.GetPortal then
+
+        local isOpen, timeLeft = DungeonUtil.GetPortal(workspace:GetServerTimeNow())
+
+        if not isOpen then
+
+            DungeonEngineStatus = string.format("รอประตู Double Dugeons เปิด (เหลืออีก ~%ds)...", math.max(0, math.floor(timeLeft or 0)))
+
+            return
+
+        end
+
+    end
+
+
+
+    -- 6. จัดทีมตัวละครและสวมใส่เกียร์ที่ดีที่สุดก่อนเริ่ม
+
+    if Config.AutoEquipBestTeam then
+
+        EquipBestTeam()
+
+        task.wait(0.2)
+
+    end
+
+    if Config.AutoEquipBestGear then
+
+        EquipBestGear()
+
+        task.wait(0.15)
+
+    end
+
+
+
+    -- 7. เปิดปาร์ตี้ Double Dugeons และเริ่มเกม
+
+    DungeonEngineStatus = "กำลังเปิดปาร์ตี้ Double Dugeons..."
+
+    lastDungeonAttempt = os.clock()
+
+
+
+    local okOpen, resOpen = pcall(function()
+
+        return Remotes.Get("DungeonParty", "Open"):Invoke("Double Dugeons")
+
+    end)
+
+
+
+    if okOpen and type(resOpen) == "table" and resOpen.Success then
+
+        DungeonEngineStatus = "เปิดปาร์ตี้สำเร็จ! กำลังเริ่มดันเจี้ยน..."
+
+        task.wait(0.3)
+
+        local okStart, resStart = pcall(function()
+
+            return Remotes.Get("DungeonParty", "Start"):Invoke()
+
+        end)
+
+        if okStart and type(resStart) == "table" and resStart.Success then
+
+            DungeonEngineStatus = "เข้าสู่ Double Dugeons สำเร็จ! กำลังต่อสู้..."
+
+            task.wait(0.5)
+
+            pcall(function()
+
+                Remotes.Get("Towers", "SetAuto"):Fire(true)
+
+            end)
+
+        else
+
+            local reason = (okStart and type(resStart) == "table" and resStart.Reason) or "Failed"
+
+            if reason == "CantNow" or reason == "Busy" then
+
+                DungeonEngineStatus = "ติดสถานะเซิร์ฟเวอร์ (" .. tostring(reason) .. ") กำลังเคลียร์ปาร์ตี้..."
+
+                ExitCurrentDungeon()
+
+            else
+
+                DungeonEngineStatus = "เริ่มดันเจี้ยนไม่สำเร็จ (" .. tostring(reason) .. ") รอสักครู่..."
+
+            end
+
+        end
+
+    else
+
+        local reason = (okOpen and type(resOpen) == "table" and (resOpen.Message or resOpen.Reason)) or "Failed"
+
+        if reason == "Pick at least one unit!" then
+
+            DungeonEngineStatus = "กำลังจัดทีมตัวละครใหม่..."
+
+            EquipBestTeam()
+
+        elseif reason == "CantNow" or reason == "Busy" then
+
+            DungeonEngineStatus = "ติดสถานะปาร์ตี้เดิม กำลังรีเซ็ต..."
+
+            ExitCurrentDungeon()
+
+        else
+
+            DungeonEngineStatus = "เปิดปาร์ตี้ไม่สำเร็จ (" .. tostring(reason) .. ") รอสักครู่..."
+
+        end
+
+    end
+
+end
+
+
+
+-- Autonomous Background Monitor for Double Dungeons
+
+task.spawn(function()
+
+    while true do
+
+        task.wait(1.0)
+
+        pcall(function()
+
+            if Config.AutoDoubleDungeon then
+
+                StepAutoDoubleDungeon()
+
+            end
+
+        end)
+
+    end
+
+end)
+
+
+
+if getgenv()._AnimeAutoUltConn then
+
+    getgenv()._AnimeAutoUltConn:Disconnect()
+
+end
+
+local dungeonUltModule
+
+local nextUltCheck = 0
+
+getgenv()._AnimeAutoUltConn = RunService.Heartbeat:Connect(function()
+
+    if not Config.AutoUseUlt or not IsInDungeon() or os.clock() < nextUltCheck then
+
+        return
+
+    end
+
+    nextUltCheck = os.clock() + 0.75
+
+    local playerScripts = LocalPlayer:FindFirstChild("PlayerScripts")
+
+    local client = playerScripts and playerScripts:FindFirstChild("Client")
+
+    local controllers = client and client:FindFirstChild("Controllers")
+
+    local hudController = controllers and controllers:FindFirstChild("DungeonHud")
+
+    local moduleScript = hudController and hudController:FindFirstChild("DungeonUlt")
+
+    if not moduleScript or not moduleScript:IsA("ModuleScript") then return end
+
+    if not dungeonUltModule then
+
+        local ok, result = pcall(require, moduleScript)
+
+        if not ok or type(result) ~= "table" or type(result.Press) ~= "function" then return end
+
+        dungeonUltModule = result
+
+    end
+
+    local gui = LocalPlayer:FindFirstChild("PlayerGui")
+
+    local hud = gui and gui:FindFirstChild("DungeonHud")
+
+    local bottom = hud and hud:FindFirstChild("Bottom")
+
+    local bar = bottom and bottom:FindFirstChild("UnitBar")
+
+    if not hud or not hud:IsA("ScreenGui") or not hud.Enabled or not bar then return end
+
+    for slot = 1, 4 do
+
+        local card = bar:FindFirstChild("Slot" .. slot)
+
+        local ult = card and card:FindFirstChild("Ult")
+
+        local fill = ult and ult:FindFirstChild("Fill")
+
+        local charge = fill and fill:FindFirstChildOfClass("UIGradient")
+
+        if ult and ult:IsA("GuiObject") and ult.Visible and charge then
+
+            local points = charge.Transparency.Keypoints
+
+            if #points == 2 and points[1].Value == 0 and points[2].Value == 0 then
+
+                pcall(dungeonUltModule.Press, slot)
+
+            end
+
+        end
+
+    end
+
+end)
+
+
+
+-- ============================================================================
+
+-- 12. MULTI-STAGE AUTONOMOUS WORKER ENGINE (WITH RELIABLE STEAL & CONFIRMATION)
+
+-- ============================================================================
+
+local workerThread = nil
+
+
+
+local function DepositPack(stageName)
+
+    if not IsHoldingPack() then return end
+
+    Config.Status = "กำลังนำส่งที่จุดเตรียมตัว/Safe Zone (1155, 71, -363)..."
+
+
+
+    local hrp, hum = GetCharParts()
+
+    if not hrp or not hum or hum.Health <= 0 then return end
+
+
+
+    StopGroundMovement()
+
+    EnsureFlingBypass()
+
+
+
+    -- Routing directly through staging point (1155, 71, -363)
+
+    local targetPos = STAGING_POSITION
+
+
+
+    local initialDist = (Vector3.new(targetPos.X, 0, targetPos.Z) - Vector3.new(hrp.Position.X, 0, hrp.Position.Z)).Magnitude
+
+    local speed = GetSafeMaxSpeed(1.55)
+
+    local dynamicTimeout = math.max((initialDist / math.max(speed, 25)) + 6, 25)
+
+    local t0 = os.clock()
+
+    local reached = false
+
+
+
+    activeGroundConn = RunService.Heartbeat:Connect(function()
+
+        if not Config.IsFarmRunning or not hrp or not hrp.Parent or hum.Health <= 0 then
+
+            reached = true
+
+            StopGroundMovement()
+
+            return
+
+        end
+
+
+
+        if IsInDungeon and IsInDungeon() then
+
+            reached = true
+
+            StopGroundMovement()
+
+            return
+
+        end
+
+
+
+        if not IsHoldingPack() then
+
+            reached = true
+
+            StopGroundMovement()
+
+            return
+
+        end
+
+
+
+        if LocalPlayer.Character and LocalPlayer.Character:GetAttribute("Ragdolled") == true then
+
+            RecoverFromRagdoll(LocalPlayer.Character)
+
+        end
+
+
+
+        local curPos = hrp.Position
+
+
+
+        if curPos.Y < MIN_SAFE_Y then
+
+            local safeZ = curPos.Z
+
+            if IsInCorridor(curPos) then
+
+                safeZ = math.clamp(curPos.Z, CORRIDOR_Z_MIN, CORRIDOR_Z_MAX)
+
+            end
+
+            hrp.CFrame = CFrame.new(curPos.X, DEFAULT_GROUND_Y, safeZ)
+
+            hrp.AssemblyLinearVelocity = Vector3.zero
+
+        end
+
+
+
+        local delta2D = Vector3.new(targetPos.X - curPos.X, 0, targetPos.Z - curPos.Z)
+
+        local dist2D = delta2D.Magnitude
+
+
+
+        -- Safe Zone / Staging reached (1155, 71, -363)
+
+        if dist2D <= 3.0 or curPos.X <= 1155.0 or (os.clock() - t0 > dynamicTimeout) then
+
+            reached = true
+
+            StopGroundMovement()
+
+            return
+
+        end
+
+
+
+        speed = GetSafeMaxSpeed(1.55)
+
+        local dir2D = delta2D.Unit
+
+
+
+        -- Smooth wall deflection & multi-enemy avoidance
+
+        if IsInCorridor(curPos) then
+
+            local evadeVec = GetMultiEnemyAvoidance(curPos)
+
+            if evadeVec.Magnitude > 0 then
+
+                local testZ = curPos.Z + (dir2D.Z + evadeVec.Z) * 6
+
+                if testZ > (CORRIDOR_Z_MAX - 8) or testZ < (CORRIDOR_Z_MIN + 8) then
+
+                    evadeVec = Vector3.new(0, 0, -evadeVec.Z)
+
+                end
+
+                dir2D = (dir2D + evadeVec).Unit
+
+            end
+
+
+
+            if curPos.Z > (CORRIDOR_Z_MAX - 6) and dir2D.Z > 0 then
+
+                dir2D = Vector3.new(dir2D.X, 0, -0.6).Unit
+
+            elseif curPos.Z < (CORRIDOR_Z_MIN + 6) and dir2D.Z < 0 then
+
+                dir2D = Vector3.new(dir2D.X, 0, 0.6).Unit
+
+            end
+
+        end
+
+
+
+        hum.WalkSpeed = speed
+
+        hum:Move(dir2D, false)
+
+
+
+        local currentYVel = math.max(hrp.AssemblyLinearVelocity.Y, -8)
+
+        hrp.AssemblyLinearVelocity = Vector3.new(dir2D.X * speed, currentYVel, dir2D.Z * speed)
+
+    end)
+
+    getgenv()._AnimeGroundConn = activeGroundConn
+
+
+
+    while not reached and Config.IsFarmRunning and IsHoldingPack() and hrp and hum.Health > 0 and (os.clock() - t0 <= dynamicTimeout) do
+
+        task.wait(0.02)
+
+    end
+
+
+
+    StopGroundMovement()
+
+
+
+    if IsHoldingPack() then
+
+        local waitStart = os.clock()
+
+        while IsHoldingPack() and Config.IsFarmRunning and (os.clock() - waitStart < 4) do
+
+            task.wait(0.1)
+
+        end
+
+        task.wait(0.2)
+
+        TryAutoSellSelectedCards()
+
+        if Config.AutoUpgradeTreadmill then
+
+            TryUpgradeTreadmill()
+
+        end
+
+        if Config.AutoRebirth then
+
+            TryRebirth()
+
+        end
+
+    end
+
+end
+
+
+
+-- Reliable Prompt Steal with Full Hold Completion & Server Replication Grace
+
+local function StealPack(target, stageName)
+
+    local prompt = target.Prompt or (target.Pack and target.Pack.Parent and target.Pack:FindFirstChildWhichIsA("ProximityPrompt", true))
+
+    if not prompt or not prompt.Parent or IsHoldingPack() then return end
+
+
+
+    local hrp, hum = GetCharParts()
+
+    if not hrp or not hum or hum.Health <= 0 then return end
+
+
+
+    -- Solid halt right at card prompt (prevents sliding out of range)
+
+    StopGroundMovement()
+
+    hum:Move(Vector3.zero, false)
+
+    hrp.AssemblyLinearVelocity = Vector3.zero
+
+
+
+    local holdDuration = prompt.HoldDuration or 0.2
+
+
+
+    -- 1. Dual prompt fire: UNC native instant fire + Engine UI hold
+
+    pcall(function() fireproximityprompt(prompt, 30, true) end)
+
+    pcall(function() prompt:InputHoldBegin() end)
+
+
+
+    -- 2. Wait full hold duration without premature cancellation
+
+    local tStart = os.clock()
+
+    while os.clock() - tStart < (holdDuration + 0.1) and Config.IsFarmRunning and not IsHoldingPack() do
+
+        local curHrp, curHum = GetCharParts()
+
+        if not curHrp or not curHum or curHum.Health <= 0 then
+
+            pcall(function() prompt:InputHoldEnd() end)
+
+            return
+
+        end
+
+        if LocalPlayer.Character and LocalPlayer.Character:GetAttribute("Ragdolled") == true then
+
+            pcall(function() prompt:InputHoldEnd() end)
+
+            RecoverFromRagdoll(LocalPlayer.Character)
+
+            return
+
+        end
+
+        task.wait(0.04)
+
+    end
+
+
+
+    -- 3. Trigger proximity prompt cleanly once
+
+    pcall(function() prompt:InputHoldEnd() end)
+
+    pcall(function() fireproximityprompt(prompt) end)
+
+
+
+    -- 4. Server replication grace period: wait up to 1.5s for IsHoldingPack() to confirm
+
+    local tWait = os.clock()
+
+    while not IsHoldingPack() and Config.IsFarmRunning and (os.clock() - tWait < 1.5) do
+
+        local curHrp, curHum = GetCharParts()
+
+        if not curHrp or not curHum or curHum.Health <= 0 then break end
+
+        if LocalPlayer.Character and LocalPlayer.Character:GetAttribute("Ragdolled") == true then
+
+            RecoverFromRagdoll(LocalPlayer.Character)
+
+            break
+
+        end
+
+        task.wait(0.05)
+
+    end
+
+end
+
+
+
+local function StartMultiStageWorker()
+
+    if workerThread then
+
+        task.cancel(workerThread)
+
+        workerThread = nil
+
+    end
+
+    if getgenv()._AnimePackFarmWorker then
+
+        pcall(task.cancel, getgenv()._AnimePackFarmWorker)
+
+        getgenv()._AnimePackFarmWorker = nil
+
+    end
+
+
+
+    Config.IsFarmRunning = true
+
+
+
+    workerThread = task.spawn(function()
+
+        UnequipHeldTools()
+
+
+
+        -- เดินไปจุดเตรียมตัว (1155, 71, -363) ตอนเริ่มก่อนเสมอ
+
+        local initialHrp = GetCharParts()
+
+        if initialHrp and not IsInCorridor(initialHrp.Position) then
+
+            Config.Status = "กำลังเดินไปจุดเตรียมตัว (1155, 71, -363)..."
+
+            GoToStagingPosition("AutoFarmToggle")
+
+        end
+
+
+
+        while Config.IsFarmRunning do
+
+            local hrp, hum = GetCharParts()
+
+            if not hrp or not hum or hum.Health <= 0 then
+
+                task.wait(0.5)
+
+                continue
+
+            end
+
+
+
+            if IsInDungeon and IsInDungeon() then
+
+                Config.Status = "กำลังลงดันเจี้ยน (พักการฟาร์มการ์ดชั่วคราว)..."
+
+                task.wait(1.0)
+
+                continue
+
+            end
+
+
+
+            -- 1. นำการ์ดไปส่งที่ Safe Zone หากถืออยู่ (ผ่านจุด Staging 1155, 71, -363)
+
+            if IsHoldingPack() then
+
+                if IsOnTreadmill() then
+
+                    ExitTreadmill()
+
+                end
+
+                DepositPack()
+
+                if Config.AutoPlaceCards then
+
+                    TryAutoPlaceCards()
+
+                end
+
+                continue
+
+            end
+
+
+
+            -- 2. ค้นหาการ์ดที่ดีที่สุดตามระดับที่เลือก จากทุกด่านที่เปิดไว้
+
+            local target = FindBestTargetInActiveStages()
+
+
+
+            if target then
+
+                UnequipHeldTools()
+
+                if IsOnTreadmill() then
+
+                    Config.Status = string.format("พบการ์ด %s [%s] ใน %s กำลังลงจากลู่วิ่ง...", target.Name, target.Rarity, target.Stage)
+
+                    ExitTreadmill()
+
+                    task.wait(0.15)
+
+                end
+
+
+
+                local curHrp = GetCharParts()
+
+                if curHrp and not IsInCorridor(curHrp.Position) then
+
+                    Config.Status = "ไปจุดเตรียมตัว (1155, 71, -363) ก่อนออกไปเก็บ..."
+
+                    GoToStagingPosition("BeforeDeparture")
+
+                end
+
+
+
+                local stealAttempts = 0
+
+                local stealStartTime = os.clock()
+
+
+
+                while Config.IsFarmRunning and not IsHoldingPack() do
+
+                    local loopHrp, loopHum = GetCharParts()
+
+                    if not loopHrp or not loopHum or loopHum.Health <= 0 then
+
+                        task.wait(0.5)
+
+                        continue
+
+                    end
+
+
+
+                    if LocalPlayer.Character and LocalPlayer.Character:GetAttribute("Ragdolled") == true then
+
+                        RecoverFromRagdoll(LocalPlayer.Character)
+
+                    end
+
+
+
+                    local curPos = loopHrp.Position
+
+                    local packPos = target.Position
+
+                    if target.Prompt and target.Prompt.Parent then
+
+                        if target.Prompt.Parent:IsA("Attachment") then
+
+                            packPos = target.Prompt.Parent.WorldPosition
+
+                        elseif target.Prompt.Parent:IsA("BasePart") then
+
+                            packPos = target.Prompt.Parent.Position
+
+                        elseif target.Prompt.Parent:IsA("Model") then
+
+                            local ok, pPos = pcall(function() return target.Prompt.Parent:GetPivot().Position end)
+
+                            if ok and pPos then packPos = pPos end
+
+                        end
+
+                    elseif target.Pack and target.Pack.Parent then
+
+                        local ok, pPos = pcall(function() return target.Pack:GetPivot().Position end)
+
+                        if ok and pPos then packPos = pPos end
+
+                    end
+
+
+
+                    if IsInCorridor(packPos) then
+
+                        local targetZ = math.clamp(packPos.Z, CORRIDOR_Z_MIN + 10, CORRIDOR_Z_MAX - 10)
+
+                        packPos = Vector3.new(packPos.X, packPos.Y, targetZ)
+
+                    end
+
+
+
+                    local delta2D = Vector3.new(packPos.X - curPos.X, 0, packPos.Z - curPos.Z)
+
+                    local dist2D = delta2D.Magnitude
+
+                    local maxAllowedTime = math.max((dist2D / 20) + 25, 40)
+
+
+
+                    local targetValid = target and target.Pack and target.Pack.Parent
+
+                    if not targetValid or (os.clock() - stealStartTime > maxAllowedTime) or (stealAttempts >= 4) then
+
+                        if target and target.Pack then
+
+                            TargetBlacklist[target.Pack] = os.clock()
+
+                        end
+
+                        break
+
+                    end
+
+
+
+                    -- Refresh prompt & position when getting in streaming range
+
+                    local prompt = target.Pack:FindFirstChild("StealPrompt", true) 
+
+                        or target.Pack:FindFirstChildWhichIsA("ProximityPrompt", true)
+
+                    if prompt then
+
+                        target.Prompt = prompt
+
+                    end
+
+
+
+                    -- เดินไปชิดการ์ดในระยะ 2.5 studs อย่างนุ่มนวล (ไม่กระตุก ไม่ snap CFrame)
+
+                    if dist2D > 2.8 then
+
+                        Config.Status = string.format("กำลังเดินไปเอา %s [%s] ใน %s...", target.Name, target.Rarity, target.Stage)
+
+                        GroundGlideTo(packPos, 2.5, target.Stage)
+
+                    end
+
+
+
+                    if Config.IsFarmRunning and not IsHoldingPack() then
+
+                        prompt = target.Pack:FindFirstChild("StealPrompt", true) 
+
+                            or target.Pack:FindFirstChildWhichIsA("ProximityPrompt", true)
+
+                        if prompt and prompt.Parent then
+
+                            target.Prompt = prompt
+
+                            Config.Status = string.format("กำลังขโมย %s ใน %s...", target.Name, target.Stage)
+
+                            stealAttempts = stealAttempts + 1
+
+                            StealPack(target, target.Stage)
+
+                        else
+
+                            stealAttempts = stealAttempts + 1
+
+                            task.wait(0.2)
+
+                        end
+
+                    end
+
+
+
+                    if IsHoldingPack() then
+
+                        break
+
+                    end
+
+
+
+                    task.wait(0.06)
+
+                end
+
+
+
+                if IsHoldingPack() then
+
+                    Config.Status = string.format("ได้การ์ด %s แล้ว! กำลังนำส่งฐาน...", target and target.Name or "Pack")
+
+                    DepositPack(target and target.Stage)
+
+                    if Config.AutoPlaceCards then
+
+                        TryAutoPlaceCards()
+
+                    end
+
+                end
+
+            else
+
+                -- ไม่มีการ์ดในด่านที่เลือก / เก็บหมดแล้ว:
+
+                if IsOnTreadmill() then
+
+                    Config.Status = "กำลังฝึกซ้อมบนลู่วิ่ง รอการ์ดเกิดใหม่..."
+
+                    if Config.AutoUpgradeTreadmill then
+
+                        TryUpgradeTreadmill()
+
+                    end
+
+                    task.wait(0.4)
+
+                else
+
+                    local curHrp = GetCharParts()
+
+                    local distToStaging = curHrp and (Vector3.new(STAGING_POSITION.X, 0, STAGING_POSITION.Z) - Vector3.new(curHrp.Position.X, 0, curHrp.Position.Z)).Magnitude or 999
+
+
+
+                    -- วิ่งกลับ position ก่อนเริ่ม (1155, 71, -363)
+
+                    if distToStaging > 3.5 then
+
+                        Config.Status = "ไม่มีการ์ด กำลังวิ่งกลับจุดเริ่มต้น (1155, 71, -363)..."
+
+                        GoToStagingPosition("NoCardsReturn")
+
+                    end
+
+
+
+                    -- เมื่อกลับถึงจุดเริ่มต้นแล้ว เข้าลู่วิ่ง
+
+                    if Config.AutoTreadmillWhenEmpty then
+
+                        Config.Status = "กลับถึงจุดเริ่มต้นแล้ว กำลังขึ้นลู่วิ่งที่ฐาน..."
+
+                        if Config.AutoUpgradeTreadmill then
+
+                            TryUpgradeTreadmill()
+
+                        end
+
+                        EnterTreadmill()
+
+                    else
+
+                        Config.Status = "ไม่มีการ์ด รอการ์ดเกิดใหม่ที่จุดเริ่มต้น..."
+
+                    end
+
+                    task.wait(0.3)
+
+                end
+
+            end
+
+
+
+            task.wait(0.1)
+
+        end
+
+
+
+        StopGroundMovement()
+
+        if IsOnTreadmill() then
+
+            ExitTreadmill()
+
+        end
+
+        Config.Status = "Idle"
+
+    end)
+
+    getgenv()._AnimePackFarmWorker = workerThread
+
+end
+
+
+
+local function StopMultiStageWorker()
+
+    Config.IsFarmRunning = false
+
+    Config.Status = "Stopped"
+
+    if workerThread then
+
+        task.cancel(workerThread)
+
+        workerThread = nil
+
+    end
+
+    if getgenv()._AnimePackFarmWorker then
+
+        pcall(task.cancel, getgenv()._AnimePackFarmWorker)
+
+        getgenv()._AnimePackFarmWorker = nil
+
+    end
+
+    StopGroundMovement()
+
+    if IsOnTreadmill() then
+
+        ExitTreadmill()
+
+    end
+
+end
+
+
+
+getgenv().AnimePackFarmEngine = {
+
+    Start = StartMultiStageWorker,
+
+    Stop = StopMultiStageWorker,
+
+    FindTarget = FindBestTargetInActiveStages,
+
+    IsHolding = IsHoldingPack,
+
+    GlideTo = GroundGlideTo
+
+}
+
+
+
+-- ============================================================================
+
+-- 13. PERFECT AUTO TREADMILL BOOST (DUAL TOKEN + UI EVENT HOOK)
+
+-- ============================================================================
+
+if getgenv()._AnimeTreadmillConn then
+
+    pcall(function() getgenv()._AnimeTreadmillConn:Disconnect() end)
+
+    getgenv()._AnimeTreadmillConn = nil
+
+end
+
+
+
+if getgenv()._AnimeTreadmillUiConn then
+
+    pcall(function() getgenv()._AnimeTreadmillUiConn:Disconnect() end)
+
+    getgenv()._AnimeTreadmillUiConn = nil
+
+end
+
+
+
+task.spawn(function()
+
+    pcall(function()
+
+        local RemotesModule = require(ReplicatedStorage.Shared.Modules.Remotes)
+
+        local boostWrapper = RemotesModule.Get("Treadmill", "Boost")
+
+        local pg = LocalPlayer:WaitForChild("PlayerGui")
+
+        local ui = pg:WaitForChild("UI", 10)
+
+        local tap = pg:FindFirstChild("TAPTreadmillBoost", true)
+
+        local detector = tap and tap:FindFirstChild("Detector")
+
+
+
+        local function TriggerBoostTap(token)
+
+            if not Config.AutoBoostX2 then return end
+
+            if not detector or not detector.Parent then
+
+                tap = pg:FindFirstChild("TAPTreadmillBoost", true)
+
+                detector = tap and tap:FindFirstChild("Detector")
+
+            end
+
+
+
+            if detector and firesignal then
+
+                firesignal(detector.Activated)
+
+            end
+
+
+
+            if token and boostWrapper then
+
+                pcall(function()
+
+                    boostWrapper:Fire(token)
+
+                end)
+
+            end
+
+        end
+
+
+
+        if boostWrapper then
+
+            getgenv()._AnimeTreadmillConn = boostWrapper:Connect(RemotesModule.S.string(64), function(token)
+
+                task.defer(function()
+
+                    TriggerBoostTap(token)
+
+                end)
+
+            end)
+
+        end
+
+
+
+        if ui then
+
+            getgenv()._AnimeTreadmillUiConn = ui:GetPropertyChangedSignal("Enabled"):Connect(function()
+
+                if ui.Enabled and Config.AutoBoostX2 then
+
+                    task.defer(function()
+
+                        TriggerBoostTap()
+
+                    end)
+
+                end
+
+            end)
+
+        end
+
+    end)
+
+end)
+
+
+
+-- ============================================================================
+
+-- 14. HOME TAB & CONTROLS (WITH PERSISTENCE CALLBACKS)
+
+-- ============================================================================
+
+local homeTabOptions = {
+
+    Title = "Home",
+
+    Desc = "Autonomous Collection & Training",
+
+    Icon = "solar:info-square-bold",
+
+    IconColor = Grey,
+
+    IconShape = "Square",
+
+    Border = true,
+
+}
+
+local HomeTab
+
+local tabError
+
+for attempt = 1, 15 do
+
+    local ok, result = pcall(function()
+
+        return Window:Tab(homeTabOptions)
+
+    end)
+
+    if ok and result then
+
+        HomeTab = result
+
+        break
+
+    end
+
+    tabError = tostring(result)
+
+    if not tabError:find("lacking capability Plugin", 1, true) or attempt == 15 then
+
+        error(tabError, 0)
+
+    end
+
+    task.wait(1)
+
+end
+
+
+
+local StatusLabel = HomeTab:Paragraph({
+
+    Title = "Farm Status",
+
+    Desc = "Status: Idle",
+
+})
+
+
+
+local SpeedInfoLabel = HomeTab:Paragraph({
+
+    Title = "Speed Stat: Initializing...",
+
+    Desc = "Calculating speed allowance...",
+
+})
+
+
+
+local RebirthInfoLabel = HomeTab:Paragraph({
+
+    Title = "Rebirth Stat: Initializing...",
+
+    Desc = "Calculating Speed requirement...",
+
+})
+
+
+
+local TreadmillInfoLabel = HomeTab:Paragraph({
+
+    Title = "Treadmill Level: Initializing...",
+
+    Desc = "Checking upgrade price...",
+
+})
+
+
+
+task.spawn(function()
+
+    while true do
+
+        if StatusLabel and StatusLabel.SetDesc then
+
+            pcall(function()
+
+                StatusLabel:SetDesc("Status: " .. tostring(Config.Status))
+
+            end)
+
+        end
+
+        if SpeedInfoLabel and SpeedInfoLabel.SetDesc then
+
+            pcall(function()
+
+                local safeSpeed, stat, expected = GetSafeMaxSpeed()
+
+                SpeedInfoLabel:SetTitle(string.format("Speed Stat: %s", tostring(stat)))
+
+                SpeedInfoLabel:SetDesc(string.format("WalkSpeed: %.1f | วิ่งเร็วสูงสุด: %d studs/sec (1.55x)", expected or 35, safeSpeed))
+
+            end)
+
+        end
+
+        if RebirthInfoLabel and RebirthInfoLabel.SetDesc then
+
+            pcall(function()
+
+                local speed = tonumber(PlayerData and PlayerData.Get and PlayerData.Get("Speed")) or 0
+
+                local count = RebirthUtil and RebirthUtil.GetCount and RebirthUtil.GetCount(LocalPlayer) or 0
+
+                local req = RebirthUtil and RebirthUtil.GetRequirement and RebirthUtil.GetRequirement(count) or 0
+
+                local speedStr = NumberFormatter and NumberFormatter.FormatCompact and NumberFormatter.FormatCompact(speed) or tostring(math.floor(speed))
+
+                local reqStr = NumberFormatter and NumberFormatter.FormatCompact and NumberFormatter.FormatCompact(req) or tostring(math.floor(req))
+
+                local pct = req > 0 and math.min((speed / req) * 100, 100) or 0
+
+                RebirthInfoLabel:SetTitle(string.format("Rebirth Count: %d (Speed: %s / %s - %.1f%%)", count, speedStr, reqStr, pct))
+
+                local cashMult = RebirthUtil and RebirthUtil.GetCashMultiplier and RebirthUtil.GetCashMultiplier(count) or 1
+
+                local luckMult = RebirthUtil and RebirthUtil.GetLuckMultiplier and RebirthUtil.GetLuckMultiplier(count) or 1
+
+                RebirthInfoLabel:SetDesc(string.format("ตัวคูณเงิน: x%.1f Cash | ตัวคูณดวง: x%.1f Luck", cashMult, luckMult))
+
+            end)
+
+        end
+
+        if TreadmillInfoLabel and TreadmillInfoLabel.SetDesc then
+
+            pcall(function()
+
+                local curLevel = TreadmillConfig and TreadmillConfig.NormalizeLevelName and TreadmillConfig.NormalizeLevelName(PlayerData.Get(TreadmillConfig.Upgrade.DataName)) or "Level1"
+
+                local price = TreadmillConfig and TreadmillConfig.GetPriceForNextLevel and TreadmillConfig.GetPriceForNextLevel(curLevel)
+
+                local cash = tonumber(PlayerData and PlayerData.Get and PlayerData.Get("Cash")) or 0
+
+                local cashStr = NumberFormatter and NumberFormatter.FormatCompact and NumberFormatter.FormatCompact(cash) or tostring(math.floor(cash))
+
+                local priceStr = price and (NumberFormatter and NumberFormatter.FormatCompact and ("$" .. NumberFormatter.FormatCompact(price)) or ("$" .. tostring(price))) or "MAX LEVEL"
+
+                local pct = (price and price > 0) and math.min((cash / price) * 100, 100) or 100
+
+                local statusMsg = ""
+
+                if not price then
+
+                    statusMsg = "ระดับสูงสุดแล้ว (MAX)"
+
+                elseif cash >= price then
+
+                    statusMsg = "เงินถึงเกณฑ์แล้ว! พร้อมอัปเกรดอัตโนมัติ"
+
+                else
+
+                    local diff = math.max(price - cash, 0)
+
+                    local diffStr = NumberFormatter and NumberFormatter.FormatCompact and ("$" .. NumberFormatter.FormatCompact(diff)) or ("$" .. tostring(math.floor(diff)))
+
+                    statusMsg = string.format("เงินยังไม่ถึง (ขาดอีก %s)", diffStr)
+
+                end
+
+                TreadmillInfoLabel:SetTitle(string.format("ลู่วิ่ง: %s | เงิน: $%s / %s (%.1f%%)", tostring(curLevel), cashStr, priceStr, pct))
+
+                TreadmillInfoLabel:SetDesc(string.format("สถานะอัปเกรด: %s", statusMsg))
+
+            end)
+
+        end
+
+        task.wait(0.4)
+
+    end
+
+end)
+
+
+
+HomeTab:Toggle({
+
+    Title = "เปิดระบบ Auto Farm",
+
+    Desc = "เริ่มค้นหาและเก็บการ์ดตามระดับและด่านที่เลือกอัตโนมัติ (หากไม่มีจะไปลู่วิ่งรอ)",
+
+    Value = Config.IsFarmRunning,
+
+    Callback = function(val)
+
+        Config.IsFarmRunning = val
+
+        SaveConfig()
+
+        if val then
+
+            StartMultiStageWorker()
+
+        else
+
+            StopMultiStageWorker()
+
+        end
+
+    end
+
+})
+
+
+
+HomeTab:Dropdown({
+
+    Title = "เลือกระดับการ์ดที่ต้องการเก็บ",
+
+    Desc = "เลือกเกรดการ์ดที่ต้องการฉก (รองรับครบทั้ง 16 ระดับจนถึง Immortal และ ???)",
+
+    Values = ALL_RARITIES_WITH_ALL,
+
+    Value = Config.SelectedRaritiesList,
+
+    Multi = true,
+
+    AllowNone = true,
+
+    Callback = function(val)
+
+        UpdateSelectedRarities(val)
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+HomeTab:Dropdown({
+
+    Title = "เลือกด่านที่ต้องการฟาร์ม",
+
+    Desc = "เลือกด่านที่ต้องการให้บอทไปเก็บการ์ด (มีด่านท้ายสุด Stage 13)",
+
+    Values = ALL_STAGES,
+
+    Value = Config.SelectedStagesList,
+
+    Multi = true,
+
+    AllowNone = false,
+
+    Callback = function(val)
+
+        UpdateSelectedStages(val)
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+HomeTab:Toggle({
+
+    Title = "เน้นฟาร์มด่านท้ายก่อน (Prioritize End Stage)",
+
+    Desc = "เรียงลำดับการเก็บการ์ดจากด่านท้ายสุด (Stage 13 ลงมา) ก่อนด่านแรก เพื่อให้ได้การ์ดที่ดีที่สุด",
+
+    Value = Config.PrioritizeEndStage,
+
+    Callback = function(val)
+
+        Config.PrioritizeEndStage = val
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+HomeTab:Button({
+
+    Title = "ฟาร์มเฉพาะด่านท้ายสุด (Select Last Stage Only)",
+
+    Desc = "คลิกเพื่อเลือกเฉพาะ Stage 13 (ด่านท้ายสุด) ทันที",
+
+    Callback = function()
+
+        UpdateSelectedStages({"ด่านท้ายสุด (Stage 13)", "Stage 13"})
+
+        Config.SelectedStagesList = {"ด่านท้ายสุด (Stage 13)", "Stage 13"}
+
+        SaveConfig()
+
+        if WindUI and WindUI.Notify then
+
+            WindUI:Notify({
+
+                Title = "เลือกด่านท้ายสุด",
+
+                Content = "ตั้งค่าเลือกเฉพาะด่านท้ายสุด (Stage 13) เรียบร้อยแล้ว",
+
+                Duration = 3
+
+            })
+
+        end
+
+    end
+
+})
+
+
+
+HomeTab:Toggle({
+
+    Title = "Auto Boost ลู่วิ่ง",
+
+    Desc = "เร่งสปีดคูณสองบนสายพานอัตโนมัติด้วยระบบ Token ไร้การพลาด",
+
+    Value = Config.AutoBoostX2,
+
+    Callback = function(val)
+
+        Config.AutoBoostX2 = val
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+HomeTab:Toggle({
+
+    Title = "Auto Treadmill ระหว่างรอการ์ด",
+
+    Desc = "ขึ้นสายพานฝึกซ้อมระหว่างด่านว่าง และกระโดดออกทันทีเมื่อการ์ดรีสปอว์น",
+
+    Value = Config.AutoTreadmillWhenEmpty,
+
+    Callback = function(val)
+
+        Config.AutoTreadmillWhenEmpty = val
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+HomeTab:Toggle({
+
+    Title = "Auto Rebirth (เกิดใหม่อัตโนมัติ)",
+
+    Desc = "รีเบิร์ธอัตโนมัติทันทีเมื่อ Speed ถึงเกณฑ์ เพื่อรับตัวคูณ Cash และ Luck มหาศาล",
+
+    Value = Config.AutoRebirth,
+
+    Callback = function(val)
+
+        Config.AutoRebirth = val
+
+        SaveConfig()
+
+        if val then
+
+            task.defer(function()
+
+                TryRebirth()
+
+            end)
+
+        end
+
+    end
+
+})
+
+
+
+HomeTab:Toggle({
+
+    Title = "Auto Upgrade ลู่วิ่ง",
+
+    Desc = "อัปเกรดระดับลู่วิ่งอัตโนมัติเมื่อเงินถึงเกณฑ์ เพื่อเพิ่มค่า Speed ต่อก้าวให้สูงสุด",
+
+    Value = Config.AutoUpgradeTreadmill,
+
+    Callback = function(val)
+
+        Config.AutoUpgradeTreadmill = val
+
+        SaveConfig()
+
+        if val then
+
+            task.defer(function()
+
+                TryUpgradeTreadmill()
+
+            end)
+
+        end
+
+    end
+
+})
+
+
+
+HomeTab:Button({
+
+    Title = "กด Rebirth ทันที (Manual)",
+
+    Desc = "สั่งรีเบิร์ธเดี๋ยวนี้หากค่า Speed ถึงเกณฑ์ที่กำหนด",
+
+    Callback = function()
+
+        local success = TryRebirth(true)
+
+        if not success and WindUI and WindUI.Notify then
+
+            local speed = tonumber(PlayerData and PlayerData.Get and PlayerData.Get("Speed")) or 0
+
+            local count = RebirthUtil and RebirthUtil.GetCount and RebirthUtil.GetCount(LocalPlayer) or 0
+
+            local req = RebirthUtil and RebirthUtil.GetRequirement and RebirthUtil.GetRequirement(count) or 0
+
+            WindUI:Notify({
+
+                Title = "Rebirth ไม่สำเร็จ",
+
+                Content = string.format("ต้องใช้ Speed อย่างน้อย %s (ปัจจุบันมี %s)", 
+
+                    NumberFormatter and NumberFormatter.FormatCompact(req) or tostring(req),
+
+                    NumberFormatter and NumberFormatter.FormatCompact(speed) or tostring(speed)),
+
+                Duration = 3
+
+            })
+
+        end
+
+    end
+
+})
+
+
+
+HomeTab:Button({
+
+    Title = "กด Upgrade ลู่วิ่งทันที (Manual)",
+
+    Desc = "สั่งเดินไปกดปุ่มอัปเกรดลู่วิ่งที่ฐานเดี๋ยวนี้หากเงินถึงเกณฑ์",
+
+    Callback = function()
+
+        local canUp, price = CanUpgradeTreadmill()
+
+        if not canUp then
+
+            if WindUI and WindUI.Notify then
+
+                local curLevel = TreadmillConfig and TreadmillConfig.NormalizeLevelName(PlayerData.Get(TreadmillConfig.Upgrade.DataName))
+
+                local cash = tonumber(PlayerData and PlayerData.Get and PlayerData.Get("Cash")) or 0
+
+                local diff = price and math.max(price - cash, 0) or 0
+
+                WindUI:Notify({
+
+                    Title = "เงินยังไม่ถึงเกณฑ์",
+
+                    Content = price and string.format("ต้องใช้เงิน $%s (ปัจจุบันมี $%s ขาดอีก $%s)", 
+
+                        NumberFormatter and NumberFormatter.FormatCompact(price) or tostring(price),
+
+                        NumberFormatter and NumberFormatter.FormatCompact(cash) or tostring(cash),
+
+                        NumberFormatter and NumberFormatter.FormatCompact(diff) or tostring(math.floor(diff))) 
+
+                        or "ลู่วิ่งระดับสูงสุด (MAX) แล้ว",
+
+                    Duration = 3
+
+                })
+
+            end
+
+            return
+
+        end
+
+        TryUpgradeTreadmill(true)
+
+    end
+
+})
+
+
+
+-- ============================================================================
+
+-- 15. DOUBLE DUNGEONS TAB (AUTOMATION & CONTROLS)
+
+-- ============================================================================
+
+local DungeonTab = Window:Tab({
+
+    Title = "Double Dungeons",
+
+    Desc = "Auto Double Dugeons (50B+ Speed)",
+
+    Icon = "solar:sword-bold",
+
+    IconColor = Grey,
+
+    IconShape = "Square",
+
+    Border = true,
+
+})
+
+
+
+local DungeonStatusLabel = DungeonTab:Paragraph({
+
+    Title = "Double Dugeons Status: Initializing...",
+
+    Desc = "สถานะ: ปิดใช้งาน (Idle)",
+
+})
+
+
+
+local TeamPowerLabel = DungeonTab:Paragraph({
+
+    Title = "Team Stats: Initializing...",
+
+    Desc = "กำลังคำนวณพลังทีม...",
+
+})
+
+
+
+local GearPowerLabel = DungeonTab:Paragraph({
+
+    Title = "Gear Stats: Initializing...",
+
+    Desc = "กำลังตรวจสอบอุปกรณ์เกียร์ที่สวมใส่...",
+
+})
+
+
+
+task.spawn(function()
+
+    while true do
+
+        if DungeonStatusLabel and DungeonStatusLabel.SetDesc then
+
+            pcall(function()
+
+                local inDungeon = IsInDungeon()
+
+                local extra = inDungeon and " [อยู่ในดันเจี้ยน]" or " [อยู่นอกดันเจี้ยน]"
+
+                if DungeonUtil and DungeonUtil.GetPortal then
+
+                    local isOpen, timeLeft = DungeonUtil.GetPortal(workspace:GetServerTimeNow())
+
+                    if isOpen then
+
+                        extra = extra .. string.format(" (ประตูเปิดอยู่: %ds)", math.max(0, math.floor(timeLeft or 0)))
+
+                    else
+
+                        extra = extra .. string.format(" (ประตูปิด: อีก %ds)", math.max(0, math.floor(timeLeft or 0)))
+
+                    end
+
+                end
+
+                DungeonStatusLabel:SetTitle("Double Dugeons Status" .. extra)
+
+                DungeonStatusLabel:SetDesc("สถานะ: " .. tostring(DungeonEngineStatus))
+
+            end)
+
+        end
+
+        if TeamPowerLabel and TeamPowerLabel.SetDesc then
+
+            pcall(function()
+
+                local topIds, allUnits = GetBestUnits(4)
+
+                local totalDmg = 0
+
+                local totalHp = 0
+
+                local names = {}
+
+                for _, u in ipairs(allUnits) do
+
+                    if table.find(topIds, u.Id) then
+
+                        totalDmg = totalDmg + u.Damage
+
+                        totalHp = totalHp + u.Health
+
+                        table.insert(names, u.Name .. " (" .. u.Rarity .. ")")
+
+                    end
+
+                end
+
+                local dmgStr = NumberFormatter and NumberFormatter.FormatCompact(totalDmg) or tostring(totalDmg)
+
+                local hpStr = NumberFormatter and NumberFormatter.FormatCompact(totalHp) or tostring(totalHp)
+
+                TeamPowerLabel:SetTitle(string.format("พลังทีมท็อป 4: ⚔️ %s DMG | ❤️ %s HP", dmgStr, hpStr))
+
+                TeamPowerLabel:SetDesc(#names > 0 and ("สมาชิก: " .. table.concat(names, ", ")) or "ยังไม่มีตัวละครในทีม")
+
+            end)
+
+        end
+
+        if GearPowerLabel and GearPowerLabel.SetDesc then
+
+            pcall(function()
+
+                local bestBySlot, allOwned = GetBestGears()
+
+                local slots = { "Head", "Face", "Waist", "Back", "Upper" }
+
+                local gearNames = {}
+
+                local totalDmgMult = 1.0
+
+                local totalSpdMult = 1.0
+
+                local totalLuckMult = 1.0
+
+                
+
+                for _, s in ipairs(slots) do
+
+                    local eqId = LocalPlayer and LocalPlayer:GetAttribute("Gear" .. s)
+
+                    if eqId and eqId ~= "" and eqId ~= "None" then
+
+                        local gearData = nil
+
+                        if ItemConfig and ItemConfig.Gears then
+
+                            for _, g in ipairs(ItemConfig.Gears) do
+
+                                if g.Id == eqId then gearData = g break end
+
+                            end
+
+                        end
+
+                        local name = gearData and gearData.DisplayName or eqId
+
+                        table.insert(gearNames, string.format("%s: %s", s, name))
+
+                        if gearData then
+
+                            totalDmgMult = totalDmgMult * (gearData.Damage or 1.0)
+
+                            totalSpdMult = totalSpdMult * (gearData.Speed or 1.0)
+
+                            totalLuckMult = totalLuckMult * (gearData.Luck or 1.0)
+
+                        end
+
+                    else
+
+                        table.insert(gearNames, string.format("%s: -", s))
+
+                    end
+
+                end
+
+                
+
+                local dmgPct = math.floor((totalDmgMult - 1.0) * 100 + 0.5)
+
+                local spdPct = math.floor((totalSpdMult - 1.0) * 100 + 0.5)
+
+                local luckPct = math.floor((totalLuckMult - 1.0) * 100 + 0.5)
+
+                
+
+                GearPowerLabel:SetTitle(string.format("โบนัสเกียร์: ⚔️ +%d%% DMG | ⚡ +%d%% SPD | 🍀 +%d%% LUCK", dmgPct, spdPct, luckPct))
+
+                GearPowerLabel:SetDesc(table.concat(gearNames, " | "))
+
+            end)
+
+        end
+
+        task.wait(0.5)
+
+    end
+
+end)
+
+
+
+DungeonTab:Section({
+
+    Title = "Double Dugeons Automation (ระบบดันเจี้ยนอัตโนมัติ)"
+
+})
+
+
+
+DungeonTab:Toggle({
+
+    Title = "Auto Double Dugeons (ลงดันเจี้ยนพอร์ทัลอัตโนมัติ)",
+
+    Desc = "เปิดปาร์ตี้และลง Double Dugeons อัตโนมัติเมื่อ Speed ถึง 50B และประตูเปิด พร้อมเปิดโหมด Auto ตีมอนให้อัตโนมัติ",
+
+    Value = Config.AutoDoubleDungeon,
+
+    Callback = function(val)
+
+        Config.AutoDoubleDungeon = val
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+DungeonTab:Toggle({
+
+    Title = "Stop at Wave (ออกเมื่อถึงเวฟที่กำหนด)",
+
+    Desc = "ออกจากดันเจี้ยนทันทีเมื่อถึงเวฟที่ตั้งไว้",
+
+    Value = Config.StopAtWave == true,
+
+    Callback = function(val)
+
+        Config.StopAtWave = val
+
+        stopWaveTriggered = false
+
+        SaveConfig()
+
+        CheckStopWave()
+
+    end
+
+})
+
+
+
+DungeonTab:Input({
+
+    Title = "Stop Wave (เวฟที่ต้องการออก)",
+
+    Desc = "ใส่หมายเลขเวฟตั้งแต่ 1 ขึ้นไป",
+
+    Value = tostring(Config.StopWaveNumber or 10),
+
+    Placeholder = "10",
+
+    Callback = function(val)
+
+        local wave = tonumber(val)
+
+        if not wave or wave < 1 or wave > 999999 then return end
+
+        Config.StopWaveNumber = math.floor(wave)
+
+        stopWaveTriggered = false
+
+        SaveConfig()
+
+        CheckStopWave()
+
+    end
+
+})
+
+
+
+DungeonTab:Toggle({
+
+    Title = "Auto Use Ult (ใช้สกิลอัลติอัตโนมัติ)",
+
+    Desc = "ใช้ Ult ของตัวละครทั้ง 4 ช่องเมื่อเกจเต็มในดันเจี้ยน",
+
+    Value = Config.AutoUseUlt == true,
+
+    Callback = function(val)
+
+        Config.AutoUseUlt = val
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+DungeonTab:Toggle({
+
+    Title = "Auto Equip Best Team (จัดตัวละครแรงสุดลงทีมอัตโนมัติ)",
+
+    Desc = "คัดเลือกตัวละครที่มีค่า Damage สูงสุด 4 ตัวลงทีมอัตโนมัติก่อนเริ่มลงดันเจี้ยน",
+
+    Value = Config.AutoEquipBestTeam,
+
+    Callback = function(val)
+
+        Config.AutoEquipBestTeam = val
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+DungeonTab:Toggle({
+
+    Title = "Auto Equip Best Gear (สวมใส่เกียร์ที่ดีที่สุดอัตโนมัติ)",
+
+    Desc = "ค้นหาและสวมใส่อุปกรณ์/เกียร์ที่มีค่า Damage/Speed สูงสุดในคลังอัตโนมัติทั้ง 5 ช่องเมื่อลงดันเจี้ยน",
+
+    Value = Config.AutoEquipBestGear ~= false,
+
+    Callback = function(val)
+
+        Config.AutoEquipBestGear = val
+
+        SaveConfig()
+
+        if val then
+
+            EquipBestGear()
+
+        end
+
+    end
+
+})
+
+
+
+DungeonTab:Section({
+
+    Title = "Dungeon Actions & Teleport (ปุ่มคำสั่งด่วน)"
+
+})
+
+
+
+DungeonTab:Button({
+
+    Title = "เข้า Double Dugeons ทันที (Manual Start)",
+
+    Desc = "จัดทีมที่ดีที่สุด เปิดปาร์ตี้ และเริ่มเข้าสู่ Double Dugeons ทันทีเดี๋ยวนี้",
+
+    Callback = function()
+
+        task.spawn(function()
+
+            if IsOnTreadmill and IsOnTreadmill() then
+
+                ExitTreadmill()
+
+                task.wait(0.5)
+
+            end
+
+            if Config.AutoEquipBestTeam then
+
+                EquipBestTeam()
+
+                task.wait(0.2)
+
+            end
+
+            if Config.AutoEquipBestGear then
+
+                EquipBestGear()
+
+                task.wait(0.15)
+
+            end
+
+            local okOpen, resOpen = pcall(function()
+
+                return Remotes.Get("DungeonParty", "Open"):Invoke("Double Dugeons")
+
+            end)
+
+            if okOpen and type(resOpen) == "table" and resOpen.Success then
+
+                task.wait(0.25)
+
+                local okStart, resStart = pcall(function()
+
+                    return Remotes.Get("DungeonParty", "Start"):Invoke()
+
+                end)
+
+                if okStart and type(resStart) == "table" and resStart.Success then
+
+                    task.wait(0.4)
+
+                    pcall(function() Remotes.Get("Towers", "SetAuto"):Fire(true) end)
+
+                    if WindUI and WindUI.Notify then
+
+                        WindUI:Notify({
+
+                            Title = "เริ่ม Double Dugeons สำเร็จ",
+
+                            Content = "กำลังเข้าสู่ Double Dugeons และเปิดระบบ Auto ต่อสู้เรียบร้อยแล้ว",
+
+                            Duration = 3
+
+                        })
+
+                    end
+
+                else
+
+                    local reason = (okStart and type(resStart) == "table" and resStart.Reason) or "Failed"
+
+                    if WindUI and WindUI.Notify then
+
+                        WindUI:Notify({
+
+                            Title = "เริ่มไม่สำเร็จ",
+
+                            Content = "เหตุผล: " .. tostring(reason),
+
+                            Duration = 3
+
+                        })
+
+                    end
+
+                end
+
+            else
+
+                local reason = (okOpen and type(resOpen) == "table" and (resOpen.Message or resOpen.Reason)) or "Failed"
+
+                if WindUI and WindUI.Notify then
+
+                    WindUI:Notify({
+
+                        Title = "เปิดปาร์ตี้ไม่สำเร็จ",
+
+                        Content = "เหตุผล: " .. tostring(reason),
+
+                        Duration = 3
+
+                    })
+
+                end
+
+            end
+
+        end)
+
+    end
+
+})
+
+
+
+DungeonTab:Button({
+
+    Title = "วาร์ปไปหน้าประตูพอร์ทัล (Teleport to Portal)",
+
+    Desc = "วาร์ปตัวละครไปยังหน้าแท่นประตู Double Dugeons ทันที",
+
+    Callback = function()
+
+        local hrp = GetCharParts()
+
+        if hrp then
+
+            hrp.CFrame = CFrame.new(PORTAL_PAD_POS)
+
+            if WindUI and WindUI.Notify then
+
+                WindUI:Notify({
+
+                    Title = "วาร์ปสำเร็จ",
+
+                    Content = "วาร์ปมายังแท่นประตูพอร์ทัล Double Dugeons เรียบร้อยแล้ว",
+
+                    Duration = 2
+
+                })
+
+            end
+
+        end
+
+    end
+
+})
+
+
+
+DungeonTab:Button({
+
+    Title = "จัดทีมที่ดีที่สุดเดี๋ยวนี้ (Equip Best Team Now)",
+
+    Desc = "เลือกตัวละคร Damage สูงสุด 4 ตัวลงทีมเดี๋ยวนี้",
+
+    Callback = function()
+
+        local success = EquipBestTeam()
+
+        if WindUI and WindUI.Notify then
+
+            WindUI:Notify({
+
+                Title = success and "จัดทีมสำเร็จ" or "จัดทีมไม่สำเร็จ",
+
+                Content = success and "เลือกตัวละครดาเมจสูงสุด 4 ตัวลงทีมเรียบร้อยแล้ว" or "ไม่พบตัวละครที่สามารถจัดลงทีมได้",
+
+                Duration = 3
+
+            })
+
+        end
+
+    end
+
+})
+
+
+
+DungeonTab:Button({
+
+    Title = "สวมใส่เกียร์ที่ดีที่สุดเดี๋ยวนี้ (Equip Best Gear Now)",
+
+    Desc = "ค้นหาเกียร์ที่ดีที่สุดในคลังและสวมใส่ครบทั้ง 5 ช่องทันที (Head, Face, Waist, Back, Upper)",
+
+    Callback = function()
+
+        local ok, anyEquipped, count = EquipBestGear()
+
+        if WindUI and WindUI.Notify then
+
+            WindUI:Notify({
+
+                Title = ok and "สวมใส่เกียร์สำเร็จ" or "แจ้งเตือน",
+
+                Content = ok and (anyEquipped and string.format("สวมใส่เกียร์ระดับสูงสุดใหม่ %d ช่องเรียบร้อยแล้ว", count) or "คุณกำลังสวมใส่เกียร์ที่ดีที่สุดอยู่แล้ว") or "ไม่พบเกียร์ในคลัง",
+
+                Duration = 3
+
+            })
+
+        end
+
+    end
+
+})
+
+
+
+DungeonTab:Button({
+
+    Title = "ออกจากดันเจี้ยนทันที (Force Exit)",
+
+    Desc = "สั่งออกจากดันเจี้ยนทันทีและวาร์ปกลับล็อบบี้",
+
+    Callback = function()
+
+        ExitCurrentDungeon()
+
+        if WindUI and WindUI.Notify then
+
+            WindUI:Notify({
+
+                Title = "ออกจากดันเจี้ยน",
+
+                Content = "ส่งคำสั่งออกจากดันเจี้ยนเรียบร้อยแล้ว",
+
+                Duration = 2
+
+            })
+
+        end
+
+    end
+
+})
+
+-- ============================================================================
+
+-- 16. CARDS & AUTOMATION TAB (WITH PERSISTENCE & WEBHOOK)
+
+-- ============================================================================
+
+local CardTab = Window:Tab({
+
+    Title = "Cards & Webhook",
+
+    Desc = "Auto Open, Place, Sell & Webhook",
+
+    Icon = "solar:card-2-bold",
+
+    IconColor = Grey,
+
+    IconShape = "Square",
+
+    Border = true,
+
+})
+
+
+
+CardTab:Section({
+
+    Title = "Card Automation (ออโต้กาง / เปิดการ์ด)"
+
+})
+
+
+
+CardTab:Toggle({
+
+    Title = "Auto Place Cards (ออโต้กางการ์ดลงฐาน)",
+
+    Desc = "นำการ์ดจากกระเป๋ามากางลงพื้นที่ฐาน (AnimeArea) โดยอัตโนมัติตามระดับที่เลือก",
+
+    Value = Config.AutoPlaceCards,
+
+    Callback = function(val)
+
+        Config.AutoPlaceCards = val
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+CardTab:Dropdown({
+
+    Title = "Select Place Rarities (ระดับการ์ดที่จะกาง)",
+
+    Desc = "เลือกระดับการ์ดที่จะให้กางลงฐานอัตโนมัติ (เลือกได้หลายระดับ รองรับทุกระดับ)",
+
+    Multi = true,
+
+    Values = ALL_RARITIES_WITH_ALL,
+
+    Value = Config.SelectedPlaceRarities,
+
+    Callback = function(val)
+
+        UpdateSelectedPlaceRarities(val)
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+CardTab:Toggle({
+
+    Title = "Auto Open Cards (ออโต้เปิดการ์ดเมื่อโตเสร็จ)",
+
+    Desc = "เปิดการ์ดที่วางบนฐานทันทีเมื่อโตครบเวลา และข้ามอนิเมชั่นให้อัตโนมัติ",
+
+    Value = Config.AutoOpenCards,
+
+    Callback = function(val)
+
+        Config.AutoOpenCards = val
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+CardTab:Section({
+
+    Title = "Card Selling (ขายการ์ดอัตโนมัติ)"
+
+})
+
+
+
+CardTab:Toggle({
+
+    Title = "Auto Sell Selected Cards (ออโต้ขายการ์ดตามระดับ)",
+
+    Desc = "ขายการ์ดในกระเป๋าตามระดับที่เลือกทิ้งทันที เพื่อเคลียร์พื้นที่กระเป๋า",
+
+    Value = Config.AutoSellSelectCards,
+
+    Callback = function(val)
+
+        Config.AutoSellSelectCards = val
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+CardTab:Dropdown({
+
+    Title = "Select Sell Rarities (ระดับการ์ดที่จะขาย)",
+
+    Desc = "เลือกระดับการ์ดที่จะขายทิ้งอัตโนมัติ (เลือกได้ทุกระดับ)",
+
+    Multi = true,
+
+    Values = ALL_RARITIES_WITH_ALL,
+
+    Value = Config.SelectedSellRarities,
+
+    Callback = function(val)
+
+        UpdateSelectedSellRarities(val)
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+CardTab:Button({
+
+    Title = "ขายการ์ดที่เลือกเดี๋ยวนี้ (Sell Selected Now)",
+
+    Desc = "สั่งขายการ์ดตามระดับที่เลือกในกระเป๋าทันที",
+
+    Callback = function()
+
+        TryAutoSellSelectedCards()
+
+        if WindUI and WindUI.Notify then
+
+            WindUI:Notify({
+
+                Title = "ขายการ์ดสำเร็จ",
+
+                Content = "ส่งคำสั่งขายการ์ดที่เลือกเรียบร้อยแล้ว",
+
+                Duration = 2
+
+            })
+
+        end
+
+    end
+
+})
+
+
+
+CardTab:Section({
+
+    Title = "Auto Buy Upgrades (ออโต้ซื้อของอัปเกรด)"
+
+})
+
+
+
+CardTab:Toggle({
+
+    Title = "Auto Buy Best Coach (ออโต้ซื้อโค้ชเพิ่มสปีด)",
+
+    Desc = "ซื้อโค้ชที่มีระดับและตัวคูณสปีดสูงสุดที่เงิน Cash ซื้อได้โดยอัตโนมัติ",
+
+    Value = Config.AutoBuyCoach,
+
+    Callback = function(val)
+
+        Config.AutoBuyCoach = val
+
+        SaveConfig()
+
+        if val then TryAutoBuy() end
+
+    end
+
+})
+
+
+
+CardTab:Toggle({
+
+    Title = "Auto Buy Best Aura (ออโต้ซื้อออร่าเมื่อเงินถึง)",
+
+    Desc = "ซื้อออร่าที่มีระดับสูงสุดที่เงิน Cash ซื้อได้โดยอัตโนมัติ",
+
+    Value = Config.AutoBuyAura,
+
+    Callback = function(val)
+
+        Config.AutoBuyAura = val
+
+        SaveConfig()
+
+        if val then TryAutoBuy() end
+
+    end
+
+})
+
+
+
+CardTab:Section({
+
+    Title = "Discord Webhook (แจ้งเตือนผ่านดิสคอร์ด)"
+
+})
+
+
+
+CardTab:Input({
+
+    Title = "Discord Webhook URL",
+
+    Desc = "ใส่ลิงก์ Webhook จากห้อง Discord ของคุณ",
+
+    Value = Config.DiscordWebhookUrl,
+
+    Placeholder = "https://discord.com/api/webhooks/...",
+
+    Callback = function(val)
+
+        Config.DiscordWebhookUrl = tostring(val or ""):gsub("^%s+", ""):gsub("%s+$", "")
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+CardTab:Toggle({
+
+    Title = "Enable Discord Webhook (เปิดใช้งานแจ้งเตือน)",
+
+    Desc = "ส่งข้อความแจ้งเตือนเข้า Discord ทันทีเมื่อเปิดได้การ์ดหายาก",
+
+    Value = Config.DiscordWebhookEnabled,
+
+    Callback = function(val)
+
+        Config.DiscordWebhookEnabled = val
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+CardTab:Dropdown({
+
+    Title = "Minimum Webhook Rarity (ระดับขั้นต่ำที่จะแจ้งเตือน)",
+
+    Desc = "เลือกขั้นต่ำของระดับการ์ดที่จะให้ส่งแจ้งเตือน",
+
+    Multi = false,
+
+    Values = ALL_RARITIES,
+
+    Value = Config.WebhookMinRarity,
+
+    Callback = function(val)
+
+        Config.WebhookMinRarity = val
+
+        SaveConfig()
+
+    end
+
+})
+
+
+
+CardTab:Button({
+
+    Title = "ทดสอบส่ง Webhook (Test Notification)",
+
+    Desc = "ส่งข้อความทดสอบเข้า Discord เพื่อตรวจสอบว่า Webhook URL ใช้งานได้",
+
+    Callback = function()
+
+        if Config.DiscordWebhookUrl == "" then
+
+            if WindUI and WindUI.Notify then
+
+                WindUI:Notify({
+
+                    Title = "แจ้งเตือน",
+
+                    Content = "กรุณาใส่ Discord Webhook URL ก่อนกดทดสอบ",
+
+                    Duration = 3
+
+                })
+
+            end
+
+            return
+
+        end
+
+        SendDiscordWebhook(Config.DiscordWebhookUrl, {
+
+            Title = "🔔 Discord Webhook Test",
+
+            Name = "Saitama (Serious Mode)",
+
+            Rarity = "Godlike",
+
+            Weight = "60kg",
+
+            Mutation = "Emerald"
+
+        })
+
+        if WindUI and WindUI.Notify then
+
+            WindUI:Notify({
+
+                Title = "ส่งข้อความทดสอบแล้ว",
+
+                Content = "ส่งข้อความไปยัง Discord เรียบร้อยแล้ว โปรดตรวจสอบในดิสคอร์ด",
+
+                Duration = 3
+
+            })
+
+        end
+
+    end
+
+})
+
+
+
+-- Force Select Home Tab to ensure UI renders immediately on autoexec
+
+pcall(function()
+
+    if HomeTab.Select then
+
+        HomeTab:Select()
+
+    elseif Window.SelectTab then
+
+        Window:SelectTab(1)
+
+    end
+
+end)
+
+
+
+-- Auto start farm if previously saved as running
+
+if Config.IsFarmRunning then
+
+    task.defer(function()
+
+        StartMultiStageWorker()
+
+    end)
+
+end
+
