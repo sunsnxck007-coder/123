@@ -476,7 +476,9 @@ local ALL_RARITIES = {
 
     "???",
 
-    "Immortal"
+    "Immortal",
+
+    "Supreme"
 
 }
 
@@ -516,7 +518,9 @@ local ALL_RARITIES_WITH_ALL = {
 
     "???",
 
-    "Immortal"
+    "Immortal",
+
+    "Supreme"
 
 }
 
@@ -556,7 +560,9 @@ local DEFAULT_SELECTED_RARITIES = {
 
     "???",
 
-    "Immortal"
+    "Immortal",
+
+    "Supreme"
 
 }
 
@@ -594,7 +600,9 @@ local DEFAULT_RARITY_RANKS = {
 
     ["???"] = 15,
 
-    Immortal = 16
+    Immortal = 16,
+
+    Supreme = 17
 
 }
 
@@ -628,7 +636,9 @@ local ALL_STAGES = {
 
     "Stage 12",
 
-    "Stage 13"
+    "Stage 13",
+
+    "Stage 14"
 
 }
 
@@ -647,8 +657,6 @@ getgenv().AnimePackFarmConfig = getgenv().AnimePackFarmConfig or {
     SelectedStagesList = DEFAULT_SELECTED_STAGES,
 
     SelectedStagesMap = {},
-
-    PrioritizeEndStage = false,
 
     SelectedRaritiesList = DEFAULT_SELECTED_RARITIES,
 
@@ -698,7 +706,9 @@ getgenv().AnimePackFarmConfig = getgenv().AnimePackFarmConfig or {
 
         "???",
 
-        "Immortal"
+        "Immortal",
+
+        "Supreme"
 
     },
 
@@ -740,7 +750,23 @@ getgenv().AnimePackFarmConfig = getgenv().AnimePackFarmConfig or {
 
     AutoEquipBestTeam = true,
 
-    AutoEquipBestGear = true
+    AutoEquipBestGear = true,
+
+    -- Infinity Castle (⛩️) Automation
+
+    AutoInfinityCastle = false,
+
+    ICAutoEnter = true,
+
+    ICAutoReplay = true,
+
+    ICAutoSkipIntro = true,
+
+    ICAutoCollectDrops = false,
+
+    ICStopAtWave = false,
+
+    ICStopWaveNumber = 100
 
 }
 
@@ -1022,8 +1048,6 @@ local function SaveConfig()
 
             SelectedStagesList = Config.SelectedStagesList,
 
-            PrioritizeEndStage = Config.PrioritizeEndStage,
-
             AutoBoostX2 = Config.AutoBoostX2,
 
             AutoTreadmillWhenEmpty = Config.AutoTreadmillWhenEmpty,
@@ -1064,7 +1088,23 @@ local function SaveConfig()
 
             StopAtWave = Config.StopAtWave == true,
 
-            StopWaveNumber = Config.StopWaveNumber or 10
+            StopWaveNumber = Config.StopWaveNumber or 10,
+
+            -- Infinity Castle
+
+            AutoInfinityCastle = Config.AutoInfinityCastle == true,
+
+            ICAutoEnter = Config.ICAutoEnter ~= false,
+
+            ICAutoReplay = Config.ICAutoReplay ~= false,
+
+            ICAutoSkipIntro = Config.ICAutoSkipIntro ~= false,
+
+            ICAutoCollectDrops = Config.ICAutoCollectDrops == true,
+
+            ICStopAtWave = Config.ICStopAtWave == true,
+
+            ICStopWaveNumber = Config.ICStopWaveNumber or 100
 
         }
 
@@ -1100,35 +1140,30 @@ local function LoadConfig()
 
                 if type(data.SelectedRaritiesList) == "table" and #data.SelectedRaritiesList > 0 then
 
-                    local hasCommon = false
+                    -- Trust the saved list verbatim: no rarity is re-injected on load.
+                    local savedRarities = {}
 
                     for _, r in ipairs(data.SelectedRaritiesList) do
 
-                        if r == "Common" or r:find("All") or r:find("ทุก") then hasCommon = true break end
+                        if type(r) == "string" then
+
+                            table.insert(savedRarities, r)
+
+                        end
 
                     end
 
-                    if not hasCommon then
+                    if #savedRarities > 0 then
 
-                        table.insert(data.SelectedRaritiesList, 1, "Common")
-
-                        table.insert(data.SelectedRaritiesList, 2, "Uncommon")
+                        Config.SelectedRaritiesList = savedRarities
 
                     end
-
-                    Config.SelectedRaritiesList = data.SelectedRaritiesList
 
                 end
 
                 if type(data.SelectedStagesList) == "table" and #data.SelectedStagesList > 0 then
 
                     Config.SelectedStagesList = data.SelectedStagesList
-
-                end
-
-                if data.PrioritizeEndStage ~= nil then
-
-                    Config.PrioritizeEndStage = data.PrioritizeEndStage
 
                 end
 
@@ -1259,6 +1294,24 @@ local function LoadConfig()
                     Config.StopWaveNumber = math.floor(stopWave)
 
                 end
+
+                -- Infinity Castle
+
+                if type(data.AutoInfinityCastle) == "boolean" then Config.AutoInfinityCastle = data.AutoInfinityCastle end
+
+                if type(data.ICAutoEnter) == "boolean" then Config.ICAutoEnter = data.ICAutoEnter end
+
+                if type(data.ICAutoReplay) == "boolean" then Config.ICAutoReplay = data.ICAutoReplay end
+
+                if type(data.ICAutoSkipIntro) == "boolean" then Config.ICAutoSkipIntro = data.ICAutoSkipIntro end
+
+                if type(data.ICAutoCollectDrops) == "boolean" then Config.ICAutoCollectDrops = data.ICAutoCollectDrops end
+
+                if type(data.ICStopAtWave) == "boolean" then Config.ICStopAtWave = data.ICStopAtWave end
+
+                local icWave = tonumber(data.ICStopWaveNumber)
+
+                if icWave and icWave >= 1 and icWave <= 999999 then Config.ICStopWaveNumber = math.floor(icWave) end
 
             end
 
@@ -3208,23 +3261,9 @@ local function FindBestTargetInActiveStages()
 
 
 
-    -- จัดลำดับตามการตั้งค่า: หากเปิดเน้นฟาร์มด่านท้าย จะเลือกด่านท้ายสุด (เช่น Stage 13) ก่อน
+    -- เรียงตามระยะทางจากตัวละคร (ใกล้สุดก่อน)
 
     table.sort(candidates, function(a, b)
-
-        if Config.PrioritizeEndStage then
-
-            local numA = tonumber(string.match(a.Stage, "%d+")) or 0
-
-            local numB = tonumber(string.match(b.Stage, "%d+")) or 0
-
-            if numA ~= numB then
-
-                return numA > numB -- ด่านท้ายสุด (เลขด่านสูงกว่า) มาก่อนเสมอ
-
-            end
-
-        end
 
         local distA = (Vector3.new(a.Position.X, 0, a.Position.Z) - Vector3.new(myPos.X, 0, myPos.Z)).Magnitude
 
@@ -3356,7 +3395,9 @@ local function SendDiscordWebhook(webhookUrl, data)
 
         ["???"] = 0x1F1F1F,
 
-        Immortal = 0xE0FFFF
+        Immortal = 0xE0FFFF,
+
+        Supreme = 0xFF3B30
 
     }
 
@@ -4118,7 +4159,7 @@ local function GetBestUnits(maxCount)
 
                 Name = pack.CharacterName or pack.PackName or "Unit",
 
-                Rarity = pack.Rarity or "Common",
+                Rarity = pack.Rarity,
 
                 Damage = dmg,
 
@@ -4431,6 +4472,18 @@ local function StepAutoDoubleDungeon()
     if not Config.AutoDoubleDungeon then
 
         DungeonEngineStatus = "ปิดใช้งาน (Idle)"
+
+        return
+
+    end
+
+
+
+    -- 0. Guard: Infinity Castle has its own engine (section 17) — never run both.
+
+    if getgenv().IsInInfinityCastle and getgenv().IsInInfinityCastle() then
+
+        DungeonEngineStatus = "อยู่ใน Infinity Castle (ปิด Double Dugeons ชั่วคราว)"
 
         return
 
@@ -5671,6 +5724,122 @@ end)
 
 
 -- ============================================================================
+-- 13.5 CODE REDEEMER (HARDCODED LIST + MANUAL BUTTON)
+-- ============================================================================
+
+-- Active codes for Steal an Anime Pack (list refreshed 2026-11-26).
+-- Plain array on purpose: edit / add / remove here, the button redeems everything.
+local HARDCODED_CODES = {
+    "ThanksFor60K",
+    "GemsHard",
+    "DugeonLuck",
+    "BuublesGift",
+    "DoubleDugeon",
+    "EzGems",
+    "Update3",
+    "ThanksGuys",
+    "FreeAcy",
+    "PortalsOnTop",
+    "KaidoBossBug",
+    "Buubles",
+    "AdminAbuse2",
+    "Sorry",
+}
+
+local CodeRedeemRunning = false
+
+-- Codes already claimed by this account are stored in PlayerData.RedeemedCodes.
+-- It can be a set (code = true) or a plain array, so both shapes are checked.
+local function IsCodeRedeemed(code)
+    if not PlayerData or not PlayerData.Get then return false end
+
+    local redeemed = PlayerData.Get("RedeemedCodes")
+    if type(redeemed) ~= "table" then return false end
+    if redeemed[code] == true then return true end
+
+    for _, value in pairs(redeemed) do
+        if type(value) == "string" and value == code then return true end
+    end
+
+    return false
+end
+
+local function RedeemCodeOnce(code)
+    if not Remotes then return false, "Remotes ไม่พร้อม" end
+
+    local ok, result = pcall(function()
+        return Remotes.Get("Codes", "Redeem"):Invoke(code)
+    end)
+
+    if not ok then return false, "เรียกไม่สำเร็จ" end
+
+    if type(result) == "table" then
+        local message = result.Message
+        if type(message) ~= "string" then
+            message = result.Success and "redeemed" or "ไม่สำเร็จ"
+        end
+        return result.Success == true, message
+    end
+
+    return false, "ไม่มีข้อมูลตอบกลับ"
+end
+
+local function RedeemAllCodes()
+    if CodeRedeemRunning then
+        if WindUI and WindUI.Notify then
+            WindUI:Notify({ Title = "Redeem All Codes", Content = "กำลังรับโค้ดอยู่ กรุณารอให้จบก่อน", Duration = 3 })
+        end
+        return
+    end
+
+    CodeRedeemRunning = true
+
+    task.spawn(function()
+        local successCount, failedCount, skipped = 0, 0, 0
+        local failedCodes = {}
+
+        for _, code in ipairs(HARDCODED_CODES) do
+            if IsCodeRedeemed(code) then
+                skipped = skipped + 1
+            else
+                local ok, message = RedeemCodeOnce(code)
+
+                if ok then
+                    successCount = successCount + 1
+                    print(string.format("[Codes] OK   %s -> %s", code, message))
+                else
+                    failedCount = failedCount + 1
+                    table.insert(failedCodes, code .. " (" .. tostring(message) .. ")")
+                    print(string.format("[Codes] FAIL %s -> %s", code, message))
+                end
+
+                task.wait(1.2) -- server rate limit is 0.5s; 1.2s keeps the queue clean
+            end
+        end
+
+        CodeRedeemRunning = false
+
+        local summary = string.format(
+            "สำเร็จ %d | ไม่ผ่าน %d | ข้ามเพราะเคยรับแล้ว %d (ทั้งหมด %d)",
+            successCount, failedCount, skipped, #HARDCODED_CODES
+        )
+
+        print("[Codes] " .. summary)
+        if #failedCodes > 0 then
+            print("[Codes] ไม่ผ่าน: " .. table.concat(failedCodes, ", "))
+        end
+
+        if WindUI and WindUI.Notify then
+            WindUI:Notify({
+                Title = successCount > 0 and "Redeem Codes สำเร็จ" or "Redeem Codes เสร็จสิ้น",
+                Content = summary,
+                Duration = 5,
+            })
+        end
+    end)
+end
+
+-- ============================================================================
 
 -- 14. HOME TAB & CONTROLS (WITH PERSISTENCE CALLBACKS)
 
@@ -5908,7 +6077,7 @@ HomeTab:Dropdown({
 
     Title = "เลือกระดับการ์ดที่ต้องการเก็บ",
 
-    Desc = "เลือกเกรดการ์ดที่ต้องการฉก (รองรับครบทั้ง 16 ระดับจนถึง Immortal และ ???)",
+    Desc = "เลือกเกรดการ์ดที่ต้องการฉก (รองรับครบทั้ง 17 ระดับจนถึง Supreme และ ???)",
 
     Values = ALL_RARITIES_WITH_ALL,
 
@@ -5934,7 +6103,7 @@ HomeTab:Dropdown({
 
     Title = "เลือกด่านที่ต้องการฟาร์ม",
 
-    Desc = "เลือกด่านที่ต้องการให้บอทไปเก็บการ์ด (มีด่านท้ายสุด Stage 13)",
+    Desc = "เลือกด่านที่ต้องการให้บอทไปเก็บการ์ด",
 
     Values = ALL_STAGES,
 
@@ -5949,60 +6118,6 @@ HomeTab:Dropdown({
         UpdateSelectedStages(val)
 
         SaveConfig()
-
-    end
-
-})
-
-
-
-HomeTab:Toggle({
-
-    Title = "เน้นฟาร์มด่านท้ายก่อน (Prioritize End Stage)",
-
-    Desc = "เรียงลำดับการเก็บการ์ดจากด่านท้ายสุด (Stage 13 ลงมา) ก่อนด่านแรก เพื่อให้ได้การ์ดที่ดีที่สุด",
-
-    Value = Config.PrioritizeEndStage,
-
-    Callback = function(val)
-
-        Config.PrioritizeEndStage = val
-
-        SaveConfig()
-
-    end
-
-})
-
-
-
-HomeTab:Button({
-
-    Title = "ฟาร์มเฉพาะด่านท้ายสุด (Select Last Stage Only)",
-
-    Desc = "คลิกเพื่อเลือกเฉพาะ Stage 13 (ด่านท้ายสุด) ทันที",
-
-    Callback = function()
-
-        UpdateSelectedStages({"ด่านท้ายสุด (Stage 13)", "Stage 13"})
-
-        Config.SelectedStagesList = {"ด่านท้ายสุด (Stage 13)", "Stage 13"}
-
-        SaveConfig()
-
-        if WindUI and WindUI.Notify then
-
-            WindUI:Notify({
-
-                Title = "เลือกด่านท้ายสุด",
-
-                Content = "ตั้งค่าเลือกเฉพาะด่านท้ายสุด (Stage 13) เรียบร้อยแล้ว",
-
-                Duration = 3
-
-            })
-
-        end
 
     end
 
@@ -6195,6 +6310,30 @@ HomeTab:Button({
         end
 
         TryUpgradeTreadmill(true)
+
+    end
+
+})
+
+
+
+HomeTab:Section({
+
+    Title = "Codes (รับโค้ดฟรี)"
+
+})
+
+
+
+HomeTab:Button({
+
+    Title = "Redeem All Codes (รับโค้ดทั้งหมด)",
+
+    Desc = "ไล่รับโค้ดทั้งหมดจากรายการที่ฝังไว้ในสคริปต์ ข้ามโค้ดที่เคยรับแล้ว และสรุปผลเมื่อจบ",
+
+    Callback = function()
+
+        RedeemAllCodes()
 
     end
 
@@ -7177,6 +7316,788 @@ CardTab:Button({
 })
 
 
+
+-- ============================================================================
+-- 17. INFINITY CASTLE (⛩️) — FULL AUTOMATION ENGINE
+-- ============================================================================
+-- Place-aware engine: works from the main lobby (queue + start) and from
+-- inside the Infinity Castle place (replay on defeat, wave/floor tracking,
+-- drop pickup, intro skip, exit gates, loot webhook).
+--
+-- Remote contract verified in-game:
+--   Towers.Start      RemoteFunction  { Tower = string, Ids = {packId}, Auto = boolean }
+--   Towers.Replay     RemoteEvent     ()            restart after defeat
+--   Towers.Restart    RemoteEvent     ()
+--   Towers.Exit       RemoteEvent     ()
+--   Towers.SetAuto    RemoteEvent     (boolean)
+--   Towers.IntroDone  RemoteEvent     ()
+--   Towers.Ult        RemoteEvent     (unitId)
+--   Towers.Event/State  server -> client state stream
+-- ============================================================================
+
+local IC = {
+    Status = "ปิดใช้งาน (Idle)",
+    InCastle = false,
+    Wave = 0,
+    EnemiesLeft = 0,
+    WavesCompleted = 0,
+    TimerText = "00:00",
+    StartsIn = nil,
+    Runs = 0,
+    BestWave = 0,
+    RareDrops = 0,
+    DropsCollected = 0,
+    LastAttempt = 0,
+    LastReplay = 0,
+    LastAutoPush = 0,
+    LastLootScan = 0,
+    LastCollect = 0,
+    LastIntro = 0,
+    SessionStart = os.clock(),
+    KnownPacks = {},
+    KnownReady = false,
+}
+
+-- Tower identifiers: "Infinity Castle" is what DungeonParty.Open accepts,
+-- "InfinityCastle" is the TowerConfig key used by Towers.Start.
+local IC_TOWER_NAMES = { "Infinity Castle", "InfinityCastle", "Infinity Castle Tower" }
+
+-- Arena place is a separate PlaceId; detection must not rely on HUD timing.
+local IC_PLACE_IDS = { [123202665987553] = true }
+
+local ICOnDefeat = nil
+
+-- Iterative search — HUD trees are deep and GetDescendants allocates too much.
+local function ICDeepFind(root, name, className)
+    if not root then return nil end
+    local stack = { root }
+    local visited = 0
+    while #stack > 0 and visited < 800 do
+        local node = table.remove(stack)
+        visited = visited + 1
+        if node.Name == name and (not className or node:IsA(className)) then
+            return node
+        end
+        for _, child in ipairs(node:GetChildren()) do
+            stack[#stack + 1] = child
+        end
+    end
+    return nil
+end
+
+local ICHud = {
+    hud = nil,
+    floorLabel = nil,
+    waveLabel = nil,
+    wavesLabel = nil,
+    timerLabel = nil,
+    startsLabel = nil,
+    defeatFrame = nil,
+    replayButton = nil,
+    defeatConn = nil,
+}
+
+local function ICRefreshHud()
+    local pg = LocalPlayer:FindFirstChild("PlayerGui")
+    local hud = pg and pg:FindFirstChild("DungeonHud")
+    if hud == ICHud.hud then return hud end
+
+    if ICHud.defeatConn then
+        pcall(function() ICHud.defeatConn:Disconnect() end)
+        ICHud.defeatConn = nil
+    end
+    if ICHud.victoryConn then
+        pcall(function() ICHud.victoryConn:Disconnect() end)
+        ICHud.victoryConn = nil
+    end
+
+    ICHud.hud = hud
+    ICHud.floorLabel = nil
+    ICHud.waveLabel = nil
+    ICHud.wavesLabel = nil
+    ICHud.timerLabel = nil
+    ICHud.startsLabel = nil
+    ICHud.defeatFrame = nil
+    ICHud.replayButton = nil
+
+    if not hud then return nil end
+
+    local top = hud:FindFirstChild("TopBar")
+    local banner = top and top:FindFirstChild("Banner")
+    ICHud.floorLabel = banner and banner:FindFirstChild("Floor")
+    ICHud.waveLabel = banner and banner:FindFirstChild("wAVE")
+
+    for _, node in ipairs(hud:GetDescendants()) do
+        if node:IsA("TextLabel") then
+            local text = tostring(node.Text)
+            if not ICHud.wavesLabel and string.find(text, "Waves Completed") then
+                ICHud.wavesLabel = node
+            elseif not ICHud.timerLabel and string.find(text, "Total Time") then
+                ICHud.timerLabel = node
+            elseif not ICHud.startsLabel and string.find(string.upper(text), "STARTS IN") then
+                ICHud.startsLabel = node
+            end
+        end
+    end
+
+    ICHud.defeatFrame = ICDeepFind(hud, "Defeat", "GuiObject")
+    if ICHud.defeatFrame then
+        ICHud.replayButton = ICDeepFind(ICHud.defeatFrame, "Replay", "GuiButton")
+        ICHud.defeatConn = ICHud.defeatFrame:GetPropertyChangedSignal("Visible"):Connect(function()
+            if ICHud.defeatFrame and ICHud.defeatFrame.Visible and ICOnDefeat then
+                ICOnDefeat()
+            end
+        end)
+    end
+
+    -- Victory / clear modal uses the same Replay flow (player keeps farming floors).
+    local victoryFrame = ICDeepFind(hud, "Victory", "GuiObject") or ICDeepFind(hud, "Win", "GuiObject")
+    if victoryFrame then
+        if not ICHud.replayButton then
+            ICHud.replayButton = ICDeepFind(victoryFrame, "Replay", "GuiButton")
+        end
+        ICHud.victoryConn = victoryFrame:GetPropertyChangedSignal("Visible"):Connect(function()
+            if victoryFrame.Visible and ICOnDefeat then
+                ICOnDefeat()
+            end
+        end)
+    end
+
+    return hud
+end
+
+local ICStartScanAt = 0
+
+-- The countdown label is created per run, so it cannot be cached at startup.
+local function ICScanStartsLabel()
+    if ICHud.startsLabel and ICHud.startsLabel.Parent then return ICHud.startsLabel end
+    ICHud.startsLabel = nil
+    if os.clock() - ICStartScanAt < 2 then return nil end
+    ICStartScanAt = os.clock()
+    local hud = ICHud.hud
+    if not hud then return nil end
+    for _, node in ipairs(hud:GetDescendants()) do
+        if node:IsA("TextLabel") and string.find(string.upper(tostring(node.Text)), "STARTS IN") then
+            ICHud.startsLabel = node
+            return node
+        end
+    end
+    return nil
+end
+
+local function ICIsInCastle()
+    if IC_PLACE_IDS[game.PlaceId] then return true end
+    if workspace:FindFirstChild("InfinityCastle") then return true end
+    local label = ICHud.floorLabel
+    if label and string.find(string.upper(tostring(label.Text)), "INFINITY") then return true end
+    return false
+end
+
+-- Section 11.6 reads this global so both engines never run at the same time.
+getgenv().IsInInfinityCastle = ICIsInCastle
+
+local function ICReadProgress()
+    ICRefreshHud()
+    IC.InCastle = ICIsInCastle()
+
+    local waveLabel = ICHud.waveLabel
+    local waveText = waveLabel and tostring(waveLabel.Text) or ""
+    local wave, left = string.match(waveText, "[Ww][Aa][Vv][Ee]%s*(%d+)%s*[^%d]*(%d+)%s*[Ll][Ee][Ff][Tt]")
+    if not wave then wave = string.match(waveText, "[Ww][Aa][Vv][Ee]%s*(%d+)") end
+    if wave then
+        IC.Wave = tonumber(wave) or IC.Wave
+        IC.LastWaveAt = os.clock()
+        if IC.Wave > IC.BestWave then IC.BestWave = IC.Wave end
+    end
+    if left then IC.EnemiesLeft = tonumber(left) or IC.EnemiesLeft end
+
+    if ICHud.wavesLabel then
+        local completed = tonumber(string.match(tostring(ICHud.wavesLabel.Text), "(%d+)"))
+        if completed then IC.WavesCompleted = completed end
+    end
+
+    if ICHud.timerLabel then IC.TimerText = tostring(ICHud.timerLabel.Text) end
+
+    local startsLabel = ICScanStartsLabel()
+    if startsLabel then
+        IC.StartsIn = tonumber(string.match(tostring(startsLabel.Text), "(%d+)"))
+    end
+end
+
+local function ICFire(namespace, name, ...)
+    if not Remotes then return false end
+    local args = { ... }
+    local ok = pcall(function()
+        local remote = Remotes.Get(namespace, name)
+        if not remote then return end
+        remote:Fire(table.unpack(args))
+    end)
+    return ok
+end
+
+local function ICInvoke(namespace, name, ...)
+    if not Remotes then return false, nil end
+    local args = { ... }
+    local ok, result = pcall(function()
+        local remote = Remotes.Get(namespace, name)
+        if not remote then return nil end
+        return remote:Invoke(table.unpack(args))
+    end)
+    if not ok then return false, nil end
+    return true, result
+end
+
+local function ICGetTeamIds()
+    local ok, ids = pcall(function()
+        return GetBestUnits(TowerConfig and TowerConfig.TeamSize or 4)
+    end)
+    if ok and type(ids) == "table" then return ids end
+    return {}
+end
+
+-- UI fallback: drives the official tower menu when the remotes change shape.
+-- Live flow (verified in the lobby place): row "Play" -> TeamFrame "EquipBest" -> "Continue".
+local function ICClickTowerUi()
+    local pg = LocalPlayer:FindFirstChild("PlayerGui")
+    local dungeonUi = pg and pg:FindFirstChild("DungeonUi")
+    if not dungeonUi then return false end
+
+    pcall(function() dungeonUi.Enabled = true end)
+    local holder = dungeonUi:FindFirstChild("Holder")
+    if holder then pcall(function() holder.Visible = true end) end
+    task.wait(0.25)
+
+    local entry = ICDeepFind(dungeonUi, "InfinityCastle", "GuiObject")
+    if not entry then return false end
+
+    local playButton = entry:FindFirstChild("Play")
+    if not playButton then return false end
+    ClickGuiButton(playButton)
+    task.wait(0.6)
+
+    local teamFrame = holder and (holder:FindFirstChild("TeamFrame") or holder:FindFirstChild("TeamSelection"))
+    if not teamFrame then return false end
+
+    local equipBest = teamFrame:FindFirstChild("EquipBest") or teamFrame:FindFirstChild("Equip Best")
+    if equipBest then
+        ClickGuiButton(equipBest)
+        task.wait(0.5)
+    end
+
+    local startButton = teamFrame:FindFirstChild("Continue") or teamFrame:FindFirstChild("Fight")
+    if not startButton then return false end
+    ClickGuiButton(startButton)
+    return true
+end
+
+local function ICStartRun()
+    if ICIsInCastle() then return false, "อยู่ในปราสาทอยู่แล้ว" end
+    if IsInDungeon and IsInDungeon() and not ICIsInCastle() then return false, "อยู่ในดันเจี้ยนอื่นอยู่" end
+
+    -- Fixed cooldown between entry attempts (server rate limit is 0.5s; 5s is safe).
+    local IC_REQUEUE_SECONDS = 5
+    if os.clock() - IC.LastAttempt < IC_REQUEUE_SECONDS then
+        local waitLeft = math.max(1, IC_REQUEUE_SECONDS - math.floor(os.clock() - IC.LastAttempt))
+        return false, string.format("รอคูลดาวน์อีก %ds", waitLeft)
+    end
+    IC.LastAttempt = os.clock()
+
+    if IsOnTreadmill and IsOnTreadmill() then
+        pcall(ExitTreadmill)
+        task.wait(0.4)
+    end
+
+    if Config.AutoEquipBestTeam and EquipBestTeam then
+        pcall(EquipBestTeam)
+        task.wait(0.2)
+    end
+    if Config.AutoEquipBestGear and EquipBestGear then
+        pcall(EquipBestGear)
+        task.wait(0.15)
+    end
+
+    local ids = ICGetTeamIds()
+    if #ids == 0 then return false, "ไม่มีตัวละครในทีม (Pick at least one unit)" end
+
+    -- Path 1 — party flow. Order matters: SetTeam -> Open -> Start (verified live).
+    local okTeam, teamResult = ICInvoke("DungeonParty", "SetTeam", ids)
+    local teamOk = okTeam and not (type(teamResult) == "table" and teamResult.Success == false)
+    if teamOk then
+        task.wait(0.6)
+
+        for _, towerName in ipairs(IC_TOWER_NAMES) do
+            local openResult = nil
+            -- The server rate-limits at 0.5s; one retry covers a "Slow down!" kick.
+            for attempt = 1, 2 do
+                local okOpen, result = ICInvoke("DungeonParty", "Open", towerName)
+                if okOpen and type(result) == "table" then
+                    openResult = result
+                    if result.Success or result.Message ~= "Slow down!" then break end
+                elseif okOpen then
+                    openResult = nil
+                    break
+                end
+                task.wait(0.7)
+            end
+
+            if type(openResult) == "table" and openResult.Success then
+                task.wait(0.6)
+                local okStart, startResult = ICInvoke("DungeonParty", "Start")
+                if okStart and type(startResult) == "table" and startResult.Success then
+                    IC.Runs = IC.Runs + 1
+                    IC.KnownReady = false
+                    return true, "เข้าปราสาทสำเร็จ (" .. towerName .. ")"
+                end
+                local startMessage = (okStart and type(startResult) == "table" and startResult.Message) or "Start ไม่ตอบสนอง"
+                return false, "เปิดปาร์ตี้แล้วแต่เริ่มไม่สำเร็จ: " .. tostring(startMessage)
+            end
+
+            if type(openResult) == "table" and openResult.Message then
+                local message = tostring(openResult.Message)
+                if message ~= "Pick at least one unit!" and message ~= "Slow down!" then
+                    return false, "เปิดปาร์ตี้ไม่สำเร็จ: " .. message
+                end
+            end
+
+            task.wait(0.5)
+        end
+    end
+
+    -- Path 2 — direct tower payload (only answers inside the dungeon place).
+    for _, towerName in ipairs(IC_TOWER_NAMES) do
+        local ok, result = ICInvoke("Towers", "Start", { Tower = towerName, Ids = ids, Auto = true })
+        if ok and type(result) == "table" and result.Success then
+            IC.Runs = IC.Runs + 1
+            IC.KnownReady = false
+            return true, "เข้าปราสาทสำเร็จ (" .. towerName .. ")"
+        end
+        task.wait(0.3)
+    end
+
+    -- Path 3 — UI click fallback.
+    local okClick, clicked = pcall(ICClickTowerUi)
+    if okClick and clicked then
+        IC.Runs = IC.Runs + 1
+        IC.KnownReady = false
+        return true, "กดปุ่มเริ่มจาก UI Towers สำเร็จ"
+    end
+
+    return false, "เริ่มไม่สำเร็จ (จะลองใหม่รอบถัดไป)"
+end
+
+local function ICReplayRun()
+    if os.clock() - IC.LastReplay < 3 then return false end
+    IC.LastReplay = os.clock()
+
+    local ok = ICFire("Towers", "Replay")
+    if not ok then ok = ICFire("Towers", "Restart") end
+    if not ok and ICHud.replayButton then
+        ClickGuiButton(ICHud.replayButton)
+        ok = true
+    end
+
+    if ok then
+        IC.Runs = IC.Runs + 1
+        IC.KnownReady = false
+    end
+    return ok
+end
+
+local function ICExitCastle()
+    ICFire("Towers", "Exit")
+    ICInvoke("DungeonParty", "Leave")
+    IC.InCastle = false
+end
+
+local function ICSkipIntro()
+    if os.clock() - IC.LastIntro < 1 then return end
+    IC.LastIntro = os.clock()
+    ICFire("Towers", "IntroDone")
+end
+
+local function ICPushAutoAttack()
+    if os.clock() - IC.LastAutoPush < 3 then return end
+    IC.LastAutoPush = os.clock()
+
+    ICFire("Towers", "SetAuto", true)
+
+    local hud = ICHud.hud
+    local bottom = hud and hud:FindFirstChild("Bottom")
+    local controls = bottom and bottom:FindFirstChild("Controls")
+    local autoButton = controls and controls:FindFirstChild("Auto")
+    local autoText = autoButton and autoButton:FindFirstChild("Text")
+    if autoText and tostring(autoText.Text) == "AUTO: OFF" then
+        ClickGuiButton(autoButton)
+    end
+end
+
+-- Drops spawn as loose parts in Workspace.Drops; touching collects them.
+local function ICCollectDrops()
+    if os.clock() - IC.LastCollect < 0.4 then return end
+    IC.LastCollect = os.clock()
+
+    local drops = workspace:FindFirstChild("Drops")
+    local character = LocalPlayer.Character
+    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+    if not drops or not hrp then return end
+
+    local collected = 0
+    local visited = 0
+    for _, part in ipairs(drops:GetChildren()) do
+        visited = visited + 1
+        if visited > 40 then break end
+        if part:IsA("BasePart") then
+            hrp.CFrame = CFrame.new(part.Position + Vector3.new(0, 1.5, 0))
+            collected = collected + 1
+            task.wait(0.06)
+        end
+    end
+
+    if collected > 0 then
+        IC.DropsCollected = IC.DropsCollected + collected
+    end
+end
+
+local function ICInventoryPacks()
+    local packs = {}
+    if not PlayerData or not PlayerData.Get then return packs end
+    local inventory = PlayerData.Get("Inventory")
+    if type(inventory) ~= "table" or type(inventory.Packs) ~= "table" then return packs end
+
+    for _, bucket in ipairs({ inventory.Packs.Placed, inventory.Packs.Backpack }) do
+        if type(bucket) == "table" then
+            for _, pack in pairs(bucket) do
+                if type(pack) == "table" and pack.Id then
+                    packs[pack.Id] = pack
+                end
+            end
+        end
+    end
+    return packs
+end
+
+-- Inventory diff -> rare-drop counter (Infinity Castle only).
+local function ICScanLoot()
+    if os.clock() - IC.LastLootScan < 5 then return end
+    IC.LastLootScan = os.clock()
+
+    local packs = ICInventoryPacks()
+    if not IC.KnownReady then
+        IC.KnownPacks = packs
+        IC.KnownReady = true
+        return
+    end
+
+    local rank = PacksConfig and PacksConfig.RarityRank
+    local minRank = (rank and rank[Config.WebhookMinRarity]) or 6
+
+    for id, pack in pairs(packs) do
+        if not IC.KnownPacks[id] then
+            local rarity = pack.Rarity or "Common"
+            local packRank = (rank and rank[rarity]) or 1
+            if packRank >= minRank then
+                IC.RareDrops = IC.RareDrops + 1
+            end
+        end
+    end
+
+    IC.KnownPacks = packs
+end
+
+ICOnDefeat = function()
+    if not Config.AutoInfinityCastle and not Config.ICAutoReplay then return end
+    IC.Status = "แพ้แล้ว — กำลังเริ่มรอบใหม่..."
+    if Config.ICAutoReplay then
+        task.delay(1.5, function()
+            if Config.AutoInfinityCastle or Config.ICAutoReplay then
+                pcall(ICReplayRun)
+            end
+        end)
+    end
+end
+
+local function ICStep()
+    ICReadProgress()
+
+    -- Exit gates are evaluated before anything else so they win over replay.
+    if IC.InCastle then
+        local waveIsLive = (os.clock() - (IC.LastWaveAt or 0)) < 5
+        local stopWave = tonumber(Config.ICStopWaveNumber) or 0
+        if Config.ICStopAtWave and stopWave > 0 and waveIsLive and IC.Wave >= stopWave then
+            IC.Status = string.format("ถึง Wave %d ตามที่ตั้งไว้ — ออกจากปราสาท", IC.Wave)
+            ICExitCastle()
+            return
+        end
+    end
+
+    if not Config.AutoInfinityCastle then
+        IC.Status = "ปิดใช้งาน (Idle)"
+        return
+    end
+
+    if IC.InCastle then
+        if Config.ICAutoSkipIntro then ICSkipIntro() end
+        ICPushAutoAttack()
+        if Config.ICAutoCollectDrops then ICCollectDrops() end
+        IC.Status = string.format("กำลังต่อสู้ • Wave %d • เหลือ %d ตัว", IC.Wave, IC.EnemiesLeft)
+        return
+    end
+
+    -- Not inside the castle: only queue when allowed.
+    if not Config.ICAutoEnter then
+        IC.Status = "อยู่นอกปราสาท (ปิด Auto Enter)"
+        return
+    end
+
+    if IC.StartsIn and IC.StartsIn > 0 then
+        IC.Status = string.format("รอเริ่มรอบถัดไป (%ds)", IC.StartsIn)
+        return
+    end
+
+    local ok, message = ICStartRun()
+    IC.Status = message
+end
+
+task.spawn(function()
+    while true do
+        pcall(ICReadProgress)
+        pcall(ICStep)
+        task.wait(0.75)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        pcall(ICScanLoot)
+        task.wait(5)
+    end
+end)
+
+local function ICNotify(title, content)
+    if WindUI and WindUI.Notify then
+        pcall(function()
+            WindUI:Notify({
+                Title = title,
+                Content = content,
+                Duration = 3,
+            })
+        end)
+    end
+end
+
+-- ============================================================================
+-- 17.1 INFINITY CASTLE TAB
+-- ============================================================================
+
+local ICTab = Window:Tab({
+    Title = "Infinity Castle",
+    Desc = "⛩️ Auto Infinity Castle — ฟังก์ชันครบชุด",
+    Icon = "solar:sword-bold",
+    IconColor = Grey,
+    IconShape = "Square",
+    Border = true,
+})
+
+local ICStatusLabel = ICTab:Paragraph({
+    Title = "Infinity Castle Status: Initializing...",
+    Desc = "สถานะ: ปิดใช้งาน (Idle)",
+})
+
+local ICProgressLabel = ICTab:Paragraph({
+    Title = "Progress: -",
+    Desc = "รอข้อมูลจาก HUD...",
+})
+
+local ICStatsLabel = ICTab:Paragraph({
+    Title = "Records: -",
+    Desc = "รอข้อมูล...",
+})
+
+task.spawn(function()
+    while true do
+        pcall(function()
+            local placeTag = IC.InCastle and " [อยู่ในปราสาท]" or " [อยู่นอกปราสาท]"
+            if ICStatusLabel and ICStatusLabel.SetTitle then
+                ICStatusLabel:SetTitle("Infinity Castle Status" .. placeTag)
+                ICStatusLabel:SetDesc("สถานะ: " .. tostring(IC.Status))
+            end
+
+            if ICProgressLabel and ICProgressLabel.SetTitle then
+                local countdown = IC.StartsIn and string.format(" • เริ่มใน %ds", IC.StartsIn) or ""
+                ICProgressLabel:SetTitle(string.format(
+                    "Wave %d • เหลือ %d ตัว%s",
+                    IC.Wave, IC.EnemiesLeft, countdown
+                ))
+                ICProgressLabel:SetDesc(string.format(
+                    "Waves Completed: %d • เวลารวม: %s • เก็บดรอป: %d",
+                    IC.WavesCompleted, tostring(IC.TimerText), IC.DropsCollected
+                ))
+            end
+
+            if ICStatsLabel and ICStatsLabel.SetTitle then
+                local elapsed = os.clock() - IC.SessionStart
+                ICStatsLabel:SetTitle(string.format(
+                    "รอบ: %d • Best Wave: %d • Rare: %d",
+                    IC.Runs, IC.BestWave, IC.RareDrops
+                ))
+                ICStatsLabel:SetDesc(string.format(
+                    "เวลาเซสชัน: %02d:%02d:%02d",
+                    math.floor(elapsed / 3600), math.floor((elapsed % 3600) / 60), math.floor(elapsed % 60)
+                ))
+            end
+        end)
+        task.wait(0.5)
+    end
+end)
+
+ICTab:Section({ Title = "Automation (ระบบอัตโนมัติ)" })
+
+ICTab:Toggle({
+    Title = "Auto Infinity Castle (เล่นปราสาทอัตโนมัติ)",
+    Desc = "เข้า-ออก-เล่นซ้ำ Infinity Castle อัตโนมัติ ทั้งจากล็อบบี้และในปราสาท",
+    Value = Config.AutoInfinityCastle == true,
+    Callback = function(value)
+        Config.AutoInfinityCastle = value
+        IC.LastAttempt = 0
+        SaveConfig()
+    end,
+})
+
+ICTab:Toggle({
+    Title = "Auto Enter From Lobby (เข้าปราสาทอัตโนมัติ)",
+    Desc = "จัดทีมที่ดีที่สุด + เกียร์ แล้วเปิด Infinity Castle ทันทีเมื่ออยู่นอกปราสาท",
+    Value = Config.ICAutoEnter ~= false,
+    Callback = function(value)
+        Config.ICAutoEnter = value
+        SaveConfig()
+    end,
+})
+
+ICTab:Toggle({
+    Title = "Auto Replay On Defeat (เล่นใหม่เมื่อแพ้)",
+    Desc = "เมื่อทีมแพ้ จะกด Replay/Restart เริ่มรอบใหม่ให้ทันที",
+    Value = Config.ICAutoReplay ~= false,
+    Callback = function(value)
+        Config.ICAutoReplay = value
+        SaveConfig()
+    end,
+})
+
+ICTab:Toggle({
+    Title = "Auto Skip Intro (ข้ามซีนเปิดฉาก)",
+    Desc = "ยิง IntroDone อัตโนมัติเพื่อไม่ต้องรอ cinematic",
+    Value = Config.ICAutoSkipIntro ~= false,
+    Callback = function(value)
+        Config.ICAutoSkipIntro = value
+        SaveConfig()
+    end,
+})
+
+ICTab:Toggle({
+    Title = "Auto Collect Drops (เก็บดรอปอัตโนมัติ)",
+    Desc = "วาร์ปไปเก็บไอเทมที่ตกใน Workspace.Drops ระหว่างเล่น",
+    Value = Config.ICAutoCollectDrops == true,
+    Callback = function(value)
+        Config.ICAutoCollectDrops = value
+        SaveConfig()
+    end,
+})
+
+ICTab:Section({ Title = "Exit Gates (เงื่อนไขออกอัตโนมัติ)" })
+
+ICTab:Toggle({
+    Title = "Stop At Wave (ออกเมื่อถึงเวฟที่ตั้ง)",
+    Desc = "ออกจากปราสาททันทีเมื่อ Wave ถึงค่าที่กำหนด",
+    Value = Config.ICStopAtWave == true,
+    Callback = function(value)
+        Config.ICStopAtWave = value
+        SaveConfig()
+    end,
+})
+
+ICTab:Input({
+    Title = "Stop Wave Number (เวฟเป้าหมาย)",
+    Desc = "ใส่ตัวเลข 1 ขึ้นไป",
+    Value = tostring(Config.ICStopWaveNumber or 100),
+    Placeholder = "100",
+    Callback = function(value)
+        local wave = tonumber(value)
+        if not wave or wave < 1 or wave > 999999 then return end
+        Config.ICStopWaveNumber = math.floor(wave)
+        SaveConfig()
+    end,
+})
+
+ICTab:Section({ Title = "Actions (ปุ่มคำสั่งด่วน)" })
+
+ICTab:Button({
+    Title = "เข้า Infinity Castle ทันที (Enter Now)",
+    Desc = "จัดทีม + เกียร์ แล้วยิง Towers.Start เข้าปราสาทเดี๋ยวนี้",
+    Callback = function()
+        task.spawn(function()
+            IC.LastAttempt = 0
+            local ok, message = ICStartRun()
+            ICNotify(ok and "เข้า Infinity Castle" or "เริ่มไม่สำเร็จ", tostring(message))
+        end)
+    end,
+})
+
+ICTab:Button({
+    Title = "เล่นรอบใหม่ทันที (Replay Now)",
+    Desc = "กด Replay/Restart เริ่มรอบใหม่ทันที",
+    Callback = function()
+        task.spawn(function()
+            IC.LastReplay = 0
+            local ok = ICReplayRun()
+            ICNotify(ok and "Replay" or "Replay ไม่สำเร็จ", ok and "ส่งคำสั่งเริ่มรอบใหม่แล้ว" or "ไม่พบรีโมท Replay/Restart")
+        end)
+    end,
+})
+
+ICTab:Button({
+    Title = "ข้าม Intro ทันที (Skip Intro)",
+    Desc = "ยิง IntroDone เพื่อข้าม cinematic เปิดฉาก",
+    Callback = function()
+        IC.LastIntro = 0
+        ICSkipIntro()
+        ICNotify("Skip Intro", "ส่งคำสั่งข้ามซีนเปิดฉากแล้ว")
+    end,
+})
+
+ICTab:Button({
+    Title = "เก็บดรอปทั้งหมดเดี๋ยวนี้ (Collect Drops)",
+    Desc = "วาร์ปเก็บไอเทมทุกชิ้นใน Workspace.Drops ทันที",
+    Callback = function()
+        task.spawn(function()
+            IC.LastCollect = 0
+            local before = IC.DropsCollected
+            ICCollectDrops()
+            ICNotify("Collect Drops", string.format("เก็บได้ %d ชิ้น", IC.DropsCollected - before))
+        end)
+    end,
+})
+
+ICTab:Button({
+    Title = "ออกจากปราสาททันที (Force Exit)",
+    Desc = "ยิง Towers.Exit + ออกจากปาร์ตี้ทันที",
+    Callback = function()
+        ICExitCastle()
+        ICNotify("Exit", "ส่งคำสั่งออกจาก Infinity Castle แล้ว")
+    end,
+})
+
+ICTab:Button({
+    Title = "รีเซ็ตสถิติเซสชัน (Reset Stats)",
+    Desc = "ล้างตัวนับรอบ / best wave / rare drops",
+    Callback = function()
+        IC.Runs = 0
+        IC.BestWave = 0
+        IC.RareDrops = 0
+        IC.DropsCollected = 0
+        IC.SessionStart = os.clock()
+        ICNotify("Reset Stats", "ล้างสถิติเซสชันเรียบร้อยแล้ว")
+    end,
+})
 
 -- Force Select Home Tab to ensure UI renders immediately on autoexec
 
