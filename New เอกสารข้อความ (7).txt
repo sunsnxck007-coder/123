@@ -672,8 +672,6 @@ getgenv().AnimePackFarmConfig = getgenv().AnimePackFarmConfig or {
 
     AutoUpgradeTreadmill = true,
 
-    MaxSpeed = 300,
-
     IsFarmRunning = false,
 
     Status = "Idle",
@@ -1637,21 +1635,9 @@ end
 
 
 
-local function EnsureFlingBypass()
-
-    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-
-    if hrp and not hrp:FindFirstChild("FlingVelocity") then
-
-        local fv = Instance.new("Folder")
-
-        fv.Name = "FlingVelocity"
-
-        fv.Parent = hrp
-
-    end
-
-end
+-- Removed the FlingVelocity bypass: the game's FlingGuardController reads that
+-- child as "already being flung" and switches itself off. Staying at the official
+-- walk speed means the guard never fights us, so we leave its protection on.
 
 
 
@@ -1730,8 +1716,6 @@ end
 local function SetupProtection(char)
 
     if not char then return end
-
-    EnsureFlingBypass()
 
 
 
@@ -2097,10 +2081,6 @@ getgenv()._AnimeHeartbeatConn = RunService.Heartbeat:Connect(function()
 
 
 
-    EnsureFlingBypass()
-
-
-
     -- Fall Rescue
 
     if hrp.Position.Y < MIN_SAFE_Y then
@@ -2199,7 +2179,7 @@ local _cachedExpected = 35
 
 
 
-local function GetSafeMaxSpeed(customMultiplier)
+local function GetSafeMaxSpeed()
 
     local now = os.clock()
 
@@ -2227,7 +2207,9 @@ local function GetSafeMaxSpeed(customMultiplier)
 
         if SpeedConfig and SpeedConfig.ToWalkSpeed then
 
-            _cachedExpected = SpeedConfig.ToWalkSpeed(_cachedSpeedStat, false)
+            local slowMode = PlayerData and PlayerData.Get and PlayerData.Get(SpeedConfig.SlowModeDataName) == true or false
+
+            _cachedExpected = SpeedConfig.ToWalkSpeed(_cachedSpeedStat, slowMode)
 
         end
 
@@ -2235,8 +2217,9 @@ local function GetSafeMaxSpeed(customMultiplier)
 
 
 
-    -- Factor in pack weight carry multiplier if carrying a pack (prevents Error 267 server kick)
-
+    -- Same budget the game's own SpeedController applies: official curve x carry
+    -- slowdown. Anything above this gets position-corrected by the server, which is
+    -- the rubberband. No multiplier on top.
     local carryMult = 1
 
     if ServerData and ServerData.Get and AdminAbuseConfig and AdminAbuseConfig.GetCarrySpeedMultiplier then
@@ -2245,7 +2228,7 @@ local function GetSafeMaxSpeed(customMultiplier)
 
         local stealingData = type(s) == "table" and s[tostring(LocalPlayer.UserId)]
 
-        if type(stealingData) == "table" and stealingData.Heavy and stealingData.Weight then
+        if type(stealingData) == "table" and stealingData.Heavy then
 
             carryMult = AdminAbuseConfig.GetCarrySpeedMultiplier(stealingData.Weight)
 
@@ -2255,13 +2238,15 @@ local function GetSafeMaxSpeed(customMultiplier)
 
 
 
-    local baseSpeed = math.max(_cachedExpected * carryMult, 20)
+    local safeSpeed = _cachedExpected * carryMult
 
-    local mult = customMultiplier or 1.55
+    if carryMult < 1 and AdminAbuseConfig and AdminAbuseConfig.Rocket and AdminAbuseConfig.Rocket.CarrySpeed then
 
-    local safeSpeed = math.floor(baseSpeed * mult)
+        safeSpeed = math.max(safeSpeed, AdminAbuseConfig.Rocket.CarrySpeed.MinimumWalkSpeed)
 
-    return math.clamp(safeSpeed, 35, 300), _cachedSpeedStat, _cachedExpected
+    end
+
+    return math.max(math.floor(safeSpeed), 8), _cachedSpeedStat, _cachedExpected
 
 end
 
@@ -2330,8 +2315,6 @@ local function GroundGlideTo(targetPos, stopDistance, stageName, speedOverride)
 
 
     StopGroundMovement()
-
-    EnsureFlingBypass()
 
 
 
@@ -2413,7 +2396,9 @@ local function GroundGlideTo(targetPos, stopDistance, stageName, speedOverride)
 
 
 
-        speed = GetSafeMaxSpeed()
+        -- Cruise at full speed, brake with the remaining distance so a fast
+        -- character never overshoots the stop radius and oscillates.
+        speed = math.min(GetSafeMaxSpeed(), math.max(dist2D * 10, 8))
 
         local dir2D = delta2D.Unit
 
@@ -2459,7 +2444,9 @@ local function GroundGlideTo(targetPos, stopDistance, stageName, speedOverride)
 
         hum:Move(dir2D, false)
 
-
+        -- The engine's PlayerModule rewrites MoveDirection every frame, so
+        -- Humanoid:Move alone never sticks. The velocity write is what actually
+        -- moves us — kept at the game's own walk speed so nothing corrects it.
 
         local currentYVel = math.max(hrp.AssemblyLinearVelocity.Y, -8)
 
@@ -2529,7 +2516,11 @@ end
 
 local function IsOnTreadmill()
 
-    return LocalPlayer:GetAttribute("TrainingOnTreadmill") ~= nil
+    -- The treadmill anchors the root part; the attribute can lag a frame behind,
+    -- so either signal means "training".
+    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+    return LocalPlayer:GetAttribute("TrainingOnTreadmill") ~= nil or (hrp ~= nil and hrp.Anchored == true)
 
 end
 
@@ -2567,9 +2558,19 @@ local function ExitTreadmill()
 
     local t0 = os.clock()
 
-    while IsOnTreadmill() and (os.clock() - t0 < 1.5) do
+    while IsOnTreadmill() and (os.clock() - t0 < 2.5) do
 
         task.wait(0.05)
+
+    end
+
+    -- If the server accepted the request but the anchor is still on, drop it here;
+    -- an anchored root can never walk, which stalls every later glide.
+    local hrp2 = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+    if hrp2 and hrp2.Anchored and LocalPlayer:GetAttribute("TrainingOnTreadmill") == nil then
+
+        pcall(function() hrp2.Anchored = false end)
 
     end
 
@@ -4209,21 +4210,84 @@ end
 
 
 
+local lastSetTeamAt = 0
+
+-- Shared throttle: the server drops SetTeam calls less than ~0.5s apart with
+-- "Slow down!", and two engines (or a manual click) used to hit it together.
+local function SetTeam(ids)
+
+    if type(ids) ~= "table" or #ids == 0 then return false, nil end
+
+    if not Remotes then return false, nil end
+
+    local waitLeft = 0.6 - (os.clock() - lastSetTeamAt)
+
+    if waitLeft > 0 then task.wait(waitLeft) end
+
+    local lastRes = nil
+
+    for attempt = 1, 2 do
+
+        lastSetTeamAt = os.clock()
+
+        local ok, res = pcall(function()
+
+            return Remotes.Get("DungeonParty", "SetTeam"):Invoke(ids)
+
+        end)
+
+        lastRes = res
+
+        if ok and type(res) == "table" and res.Success then
+
+            return true, res
+
+        end
+
+        local message = ok and type(res) == "table" and tostring(res.Message or "") or ""
+
+        -- Retry only when the server told us it was rate limiting (or gave nothing back).
+        if res ~= nil and not message:find("Slow down", 1, true) then
+
+            return false, res
+
+        end
+
+        task.wait(0.55)
+
+    end
+
+    return false, lastRes
+
+end
+
 local function EquipBestTeam()
 
-    local topIds, allUnits = GetBestUnits()
+    -- One odd inventory entry used to take the whole pick down with it.
+    local function safeBestUnits()
+
+        local ok, ids = pcall(GetBestUnits)
+
+        if ok and type(ids) == "table" then return ids end
+
+        return {}
+
+    end
+
+    local topIds = safeBestUnits()
+
+    -- Inventory can still be replicating right after a join or respawn.
+    if #topIds == 0 then
+
+        task.wait(0.4)
+
+        topIds = safeBestUnits()
+
+    end
 
     if #topIds == 0 then return false end
 
-    if not Remotes then return false end
-
-    local ok, res = pcall(function()
-
-        return Remotes.Get("DungeonParty", "SetTeam"):Invoke(topIds)
-
-    end)
-
-    return ok and type(res) == "table" and res.Success
+    return (SetTeam(topIds))
 
 end
 
@@ -4845,8 +4909,6 @@ local function DepositPack(stageName)
 
     StopGroundMovement()
 
-    EnsureFlingBypass()
-
 
 
     -- Routing directly through staging point (1155, 71, -363)
@@ -4857,7 +4919,7 @@ local function DepositPack(stageName)
 
     local initialDist = (Vector3.new(targetPos.X, 0, targetPos.Z) - Vector3.new(hrp.Position.X, 0, hrp.Position.Z)).Magnitude
 
-    local speed = GetSafeMaxSpeed(1.55)
+    local speed = GetSafeMaxSpeed()
 
     local dynamicTimeout = math.max((initialDist / math.max(speed, 25)) + 6, 25)
 
@@ -4955,7 +5017,8 @@ local function DepositPack(stageName)
 
 
 
-        speed = GetSafeMaxSpeed(1.55)
+        -- Same distance-aware braking while hauling a card (full speed until close).
+        speed = math.min(GetSafeMaxSpeed(), math.max(dist2D * 10, 8))
 
         local dir2D = delta2D.Unit
 
@@ -5001,7 +5064,9 @@ local function DepositPack(stageName)
 
         hum:Move(dir2D, false)
 
-
+        -- The engine's PlayerModule rewrites MoveDirection every frame, so
+        -- Humanoid:Move alone never sticks. The velocity write is what actually
+        -- moves us — kept at the game's own walk speed so nothing corrects it.
 
         local currentYVel = math.max(hrp.AssemblyLinearVelocity.Y, -8)
 
@@ -5193,6 +5258,12 @@ local function StartMultiStageWorker()
 
         -- เดินไปจุดเตรียมตัว (1155, 71, -363) ตอนเริ่มก่อนเสมอ
 
+        if IsOnTreadmill() then
+
+            ExitTreadmill()
+
+        end
+
         local initialHrp = GetCharParts()
 
         if initialHrp and not IsInCorridor(initialHrp.Position) then
@@ -5293,6 +5364,8 @@ local function StartMultiStageWorker()
 
                 local stealStartTime = os.clock()
 
+                local maxAllowedTime = 0
+
 
 
                 while Config.IsFarmRunning and not IsHoldingPack() do
@@ -5363,7 +5436,11 @@ local function StartMultiStageWorker()
 
                     local dist2D = delta2D.Magnitude
 
-                    local maxAllowedTime = math.max((dist2D / 20) + 25, 40)
+                    -- Budget scales with the character's actual travel speed, and only
+                    -- ever grows: after arriving, the remaining steal retries still
+                    -- need the time banked from the long leg.
+                    local travelSpeed = math.max(GetSafeMaxSpeed(), 25)
+                    maxAllowedTime = math.max(maxAllowedTime, (dist2D / travelSpeed) * 3 + 10, 30)
 
 
 
@@ -5957,7 +6034,7 @@ task.spawn(function()
 
                 SpeedInfoLabel:SetTitle(string.format("Speed Stat: %s", tostring(stat)))
 
-                SpeedInfoLabel:SetDesc(string.format("WalkSpeed: %.1f | วิ่งเร็วสูงสุด: %d studs/sec (1.55x)", expected or 35, safeSpeed))
+                SpeedInfoLabel:SetDesc(string.format("WalkSpeed: %.1f | วิ่งเร็วสูงสุด: %d studs/sec (ตามเกม)", expected or 16, safeSpeed))
 
             end)
 
@@ -7620,7 +7697,7 @@ local function ICStartRun()
     if #ids == 0 then return false, "ไม่มีตัวละครในทีม (Pick at least one unit)" end
 
     -- Path 1 — party flow. Order matters: SetTeam -> Open -> Start (verified live).
-    local okTeam, teamResult = ICInvoke("DungeonParty", "SetTeam", ids)
+    local okTeam, teamResult = SetTeam(ids)
     local teamOk = okTeam and not (type(teamResult) == "table" and teamResult.Success == false)
     if teamOk then
         task.wait(0.6)
